@@ -4,12 +4,14 @@ import { eq } from "drizzle-orm";
 import { Command } from "@/core/typings";
 import { ApplicationCommandOptionType, ChannelType, ApplicationCommandType } from "discord.js";
 import { Embed } from "@/core/Embed";
+import config from "@/config";
 
 const logTypes = [
     { name: "Member Join", value: "guildMemberAdd" },
     { name: "Member Leave", value: "guildMemberRemove" },
     { name: "Message Delete", value: "messageDelete" },
     { name: "Guild Update Event", value: "guildUpdate" },
+    { name: "Channel Update", value: "channelUpdate" }
 ] as const;
 
 export default {
@@ -113,7 +115,7 @@ export default {
 
             const eventsStatus = logTypes.map(logType => {
                 const isEnabled = enabledLogs.includes(logType.value);
-                return `**${logType.name}**: ${isEnabled ? '✅' : '❌'}`;
+                return `${logType.name}: ${isEnabled ? config.emojis.tick : config.emojis.cross}`;
             }).join('\n');
 
             const embed = new Embed({
