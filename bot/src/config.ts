@@ -1,5 +1,8 @@
 export default {
   support: "https://discord.gg/6vnBeW7KNH",
+  timeout: {
+    customCommands: 60 * 1000 * 2.5 // 2.5 seconds
+  },
   colors: {
     default: "#6c1228",
     error: "#fb2c36",

@@ -1,5 +1,6 @@
 import config from "@/config";
 import { clsx, type ClassValue } from "clsx";
+import { APIEmbed } from "discord.js";
 import {
   ChatInputApplicationCommandData,
   CommandInteraction,
@@ -128,6 +129,18 @@ export const createId = (length: number = 40) => {
   return str;
 };
 
+// extra symbols :p
+export const generateToken = (length: number = 32) => {
+  let chars =
+    "QWERTYUIOPASDFGHJKLZXCVBNM1234567890qwetyuiopasdfghjklzxcvbnm!@£--><>.??][]}{})()(&^";
+  let str = "";
+  for (let i = 0; i < length; i++) {
+    str += chars[Math.floor(Math.random() * chars.length)];
+  }
+
+  return str;
+};
+
 export function limitSentence(str: string, length: number = 25) {
   return str.length > length ? str.slice(0, length) + "..." : str;
 }
@@ -194,3 +207,53 @@ export function resolveColor(color: string) {
 
   return resolvedColor;
 }
+
+export function timeAgoExtended(date: string | Date): string {
+  const now = new Date();
+  const past = new Date(date);
+
+  // Convert both to UTC timestamps in milliseconds
+  const diffSec = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+  if (diffSec < 0) return "just now";
+
+  const units = [
+    { label: "year", seconds: 31536000 },
+    { label: "month", seconds: 2592000 },
+    { label: "week", seconds: 604800 },
+    { label: "day", seconds: 86400 },
+    { label: "hour", seconds: 3600 },
+    { label: "minute", seconds: 60 },
+    { label: "second", seconds: 1 },
+  ];
+
+  for (const { label, seconds } of units) {
+    const value = Math.floor(diffSec / seconds);
+    if (value >= 1) {
+      return `${value} ${label}${value > 1 ? "s" : ""} ago`;
+    }
+  }
+
+  return "just now";
+}
+
+export type MessagePayloadCreationData = {
+  content?: string;
+  embeds?: (APIEmbed | undefined)[];
+};
+export const formMessagePayload = (data: MessagePayloadCreationData) => {
+  let o = {} as MessagePayloadCreationData;
+  if (data.embeds && data.embeds[0] && data.embeds.length > 0) {
+    o["embeds"] = data.embeds;
+  }
+
+  if (data.content) {
+    o["content"] = data.content;
+  } else {
+    if (!data.content && (!data.embeds || data.embeds.length <= 0)) {
+      o["content"] = "Invalid message provided.";
+    }
+  }
+
+  return o;
+};

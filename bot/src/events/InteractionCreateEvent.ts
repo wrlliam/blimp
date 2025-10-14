@@ -1,4 +1,5 @@
 import {
+  ApplicationCommandOptionType,
   resolveColor,
   type ClientEvents,
   type CommandInteractionOptionResolver,
@@ -10,7 +11,7 @@ import { app } from "..";
 import { int } from "drizzle-orm/mysql-core";
 import { disabledCommand } from "../utils/misc";
 import config from "../config";
-import { reactionRole } from "@/db/schema";
+import { messages, reactionRole } from "@/db/schema";
 import { db } from "@/db";
 import { and, eq } from "drizzle-orm";
 import { defaultEmbeds, Embed } from "../core/Embed";
@@ -78,6 +79,17 @@ export default {
           embeds: [defaultEmbeds["missing-permissions"]()],
         });
       }
+
+
+      await db.insert(messages).values({
+        guildId: interaction.guild.id,
+        userId: interaction.user.id,
+        command: `${command.name} ${interaction.options.data
+          .filter((f) => f.type === ApplicationCommandOptionType.Subcommand)
+          .map((z) => z.name)
+          .join(" ")}`,
+        id: interaction.id,
+      });
 
       command.run({
         args: interaction.options as CommandInteractionOptionResolver,

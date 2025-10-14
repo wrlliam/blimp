@@ -8,7 +8,8 @@ import { eq } from "drizzle-orm";
 export default {
   name: "channelUpdate",
   run: async (oldChannel: GuildChannel, newChannel: GuildChannel) => {
-    if (!oldChannel || !newChannel || !newChannel.guild) return;
+    if (!oldChannel || !newChannel || !newChannel.guild || oldChannel === newChannel) return;
+
 
     const [gConfig] = await db
       .select()

@@ -29,7 +29,7 @@ export default function DashboardLayout({
   // Use a mutation so that we dont have to fetch on every child route call.
   const { isError, error, mutateAsync } = useMutation({
     mutationKey: ["getGuilds", "dashboard"],
-    mutationFn: (guilds: {id: string, name: string}[]) =>
+    mutationFn: async (guilds: { id: string; name: string }[]) =>
       betterFetch<{
         ok: boolean;
         data: any[];
@@ -40,6 +40,7 @@ export default function DashboardLayout({
         },
         headers: {
           "bearer-user-id": `${user?.user_id}`,
+          "bearer-authorization": `${user?.authentication_token}`,
         },
         onRequest: () => {
           console.log("Sending request to /dash/guilds/in/ with IDs:", guilds);
@@ -66,7 +67,7 @@ export default function DashboardLayout({
 
           // Extract just the IDs regardless of format
           const guildIds = Array.isArray(guildData)
-            ? guildData.map((g) => ({id: g.id, name: g.name}))
+            ? guildData.map((g) => ({ id: g.id, name: g.name }))
             : [];
 
           // Only proceed if we have IDs

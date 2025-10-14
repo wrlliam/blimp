@@ -1,15 +1,10 @@
 import {
-  pgTable,
   text,
   timestamp,
   boolean,
   integer,
-  json,
-  date,
   pgSchema,
 } from "drizzle-orm/pg-core";
-import { createId } from "../utils";
-import { MessageReference } from "discord.js";
 
 export const frontendSchema = pgSchema("frontend");
 
@@ -23,6 +18,7 @@ export const user = frontendSchema.table("user", {
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
   stripeCustomerId: text("stripe_customer_id"),
+  authentication_token: text("authentication_token").notNull(),
   guilds: text("guilds").notNull(),
 });
 
@@ -86,3 +82,6 @@ export const subscription = frontendSchema.table("subscription", {
   cancelAtPeriodEnd: boolean("cancel_at_period_end"),
   seats: integer("seats"),
 });
+
+
+

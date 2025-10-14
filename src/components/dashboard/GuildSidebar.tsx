@@ -142,13 +142,13 @@ export function GuildSidebarModules(props: GuildSidebarProps) {
       {Object.keys(TABS).map((k, i) => {
         if (k.toLowerCase() === "all") {
           return (
-            <div key={i} className="flex flex-col gap-2 mt-[1rem]">
+            <div key={i} className="flex flex-col gap-2 mt-[1rem] mb-[1rem]">
               {TABS[k as keyof typeof TABS].map((tab, i) => {
                 return (
                   <a
                     href={`/dashboard/${props.guild.id}${tab.href}`}
                     key={i}
-                    className={`flex mx-2 flex-row justify-between border-none outline-none px-[0.7rem] group bg-transparent hover:bg-gray-200/5 py-[0.7rem] rounded-md smooth_transition ${i === TABS[k as keyof typeof TABS].length - 1 ? "mb-[1rem]" : ""}`}
+                    className={`flex mx-2 flex-row justify-between items-center p-2 group bg-transparent hover:bg-gray-200/5 rounded-md smooth_transition `}
                   >
                     <div className="flex items-center gap-2 opacity-65 group-hover:opacity-100 smooth_transition">
                       <span className="">{tab.icon}</span>
@@ -174,8 +174,8 @@ export function GuildSidebarModules(props: GuildSidebarProps) {
               key={i}
               value={k}
             >
-              <AccordionTrigger className="cursor-pointer border-none outline-none bg-transparent hover:bg-gray-100/5 p-2 text-[10px]">
-                {k.toUpperCase()}
+              <AccordionTrigger className="cursor-pointer items-center flex justify-between border-none outline-none bg-transparent hover:bg-gray-100/5 p-2 pb-3 text-[10px]">
+                <p className="mt-1">{k.toUpperCase()}</p>
               </AccordionTrigger>
               <AccordionContent className="flex flex-col gap-2 mt-[1rem]">
                 {TABS[k as keyof typeof TABS].map((tab, i) => {

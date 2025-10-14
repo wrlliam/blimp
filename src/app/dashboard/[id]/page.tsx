@@ -1,15 +1,19 @@
 "use client";
 
-import GuildSidebar from "@/components/dashboard/GuildSidebar";
-import EmbedCreator from "@/components/EmbedCreator";
-import { useGuildStore } from "@/lib/stores";
-import { APIEmbed } from "discord.js";
-import { useState } from "react";
+import { MessageLineChart } from "@/components/dashboard/analytics/MessageLineChart";
+import { RecentCommands } from "@/components/dashboard/analytics/RecentCommands";
+import { useGuildStore, useUserStore } from "@/lib/stores";
+import { Guild } from "@/lib/utils";
 
 export default function DashboardPage() {
-  const [embed, setEmbed] = useState<APIEmbed | undefined>()
-  return <div className="flex w-full">
-    <EmbedCreator state={embed} setState={setEmbed}/>
-    {JSON.stringify(embed)}
-  </div>;
+  const { user } = useUserStore();
+  const { guild } = useGuildStore();
+
+  const data = { user: user, guild: guild as unknown as Guild };
+  return (
+    <div className="flex flex-row gap-2 w-full">
+      <MessageLineChart {...data} />
+      <RecentCommands {...data} />
+    </div>
+  );
 }

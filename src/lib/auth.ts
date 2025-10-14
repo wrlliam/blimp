@@ -7,7 +7,8 @@ import { env } from "@/env";
 import { nextCookies } from "better-auth/next-js";
 import { DiscordProfile } from "./types";
 import { betterFetch } from "@better-fetch/fetch";
-import { GuildDefault } from "./utils";
+import { generateToken, GuildDefault } from "./utils";
+import { eq } from "drizzle-orm";
 // import { stripe } from "@better-auth/stripe";
 // import Stripe from "stripe";
 
@@ -29,6 +30,11 @@ export const auth = betterAuth({
         defaultValue: [],
         required: true,
       },
+      authentication_token: {
+        type: "string",
+        defaultValue: generateToken(),
+        required: true,
+      },
       user_id: {
         type: "string",
         defaultValue: null,
@@ -43,6 +49,8 @@ export const auth = betterAuth({
       clientSecret: env.DISCORD_CLIENT_SECRET as string,
       //@ts-ignore
       getUserInfo: async (token) => {
+        
+
         const { data: profile, error } = await betterFetch<DiscordProfile>(
           "https://discord.com/api/users/@me",
           {
@@ -51,6 +59,7 @@ export const auth = betterAuth({
             },
           }
         );
+
         if (error || !profile) {
           return {
             user: { id: "", emailVerified: false },
@@ -68,11 +77,27 @@ export const auth = betterAuth({
         );
 
         const adminGuilds = guilds?.filter(
-          (f) => (parseInt(f.permissions) & 0x20) == 0x20
+          (f) => (parseInt(f.permissions) & 0x20) == 0x20 || f.owner
         );
 
-        console.log("User authenticated:", profile);
-        console.log(profile.id, profile);
+        const previousSchema = await db
+          .select()
+          .from(user)
+          .where(eq(user.user_id, profile.id));
+        if (
+          previousSchema &&
+          previousSchema[0] &&
+          JSON.stringify(adminGuilds) !== previousSchema[0].guilds
+        ) {
+          await db
+            .update(user)
+            .set({
+              guilds: JSON.stringify(adminGuilds),
+            })
+            .where(eq(user.user_id, profile.id))
+            .execute();
+        }
+
         return {
           user: {
             id: profile.id,

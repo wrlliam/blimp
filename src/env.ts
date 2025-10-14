@@ -25,6 +25,7 @@ export const env = createEnv({
     NEXT_PUBLIC_API_URL: z.string(),
     NEXT_PUBLIC_WS_URL: z.string(),
     NEXT_PUBLIC_DISCORD_BOT_INVITE_URL: z.string(),
+    NEXT_PUBLIC_API_SECRET: z.string(),
   },
   runtimeEnv: {
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
@@ -42,7 +43,9 @@ export const env = createEnv({
     GUILD_ID: process.env.GUILD_ID,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     WS_PORT: process.env.WS_PORT,
+    NEXT_PUBLIC_API_SECRET: process.env.NEXT_PUBLIC_API_SECRET,
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
-    NEXT_PUBLIC_DISCORD_BOT_INVITE_URL: process.env.NEXT_PUBLIC_DISCORD_BOT_INVITE_URL,
+    NEXT_PUBLIC_DISCORD_BOT_INVITE_URL:
+      process.env.NEXT_PUBLIC_DISCORD_BOT_INVITE_URL,
   },
 });

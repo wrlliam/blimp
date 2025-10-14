@@ -30,6 +30,7 @@ export default function DashboardLayout(props: {
       }>(`${env.NEXT_PUBLIC_API_URL}/dash/guild/${id}`, {
         headers: {
           "bearer-user-id": `${user.user_id}`,
+          "bearer-authorization": `${user.authentication_token}`
         },
       })
         .then((data) => {
@@ -64,7 +65,7 @@ export default function DashboardLayout(props: {
     <div className="flex w-full">
       <GuildSidebar guild={guild as Guild} />
       <div className="flex flex-col gap-3 w-full">
-        <GuildNavigationBar />
+        <GuildNavigationBar full={false} />
         <div className="px-3">{props.children}</div>
       </div>
     </div>

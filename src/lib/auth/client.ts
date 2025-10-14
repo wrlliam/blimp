@@ -19,4 +19,5 @@ export type Session = typeof authClient.$Infer.Session;
 export type User = typeof authClient.$Infer.Session.user & {
   user_id: string;
   guilds: string
+  authentication_token: string
 };

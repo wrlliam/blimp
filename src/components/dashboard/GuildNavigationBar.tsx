@@ -34,12 +34,16 @@ const DROPDOWN_OPTIONS = [
   },
 ] as DropdownOption[];
 
-export default function GuildNavigationBar() {
+export default function GuildNavigationBar({
+  full = false
+}: {
+  full: boolean
+}) {
   const { user } = useUserStore();
 
   return (
     user && (
-      <div className="flex flex-row justify-between py-2 px-4 w-full bg-dark-foreground border-b border-blimp-border">
+      <div className={`flex flex-row justify-between py-2 px-4 ${full ? "w-screen" : "w-full"} bg-dark-foreground border-b border-blimp-border`}>
         <div className="flex items-center justify-center">
           <Image
             width={50}

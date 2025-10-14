@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { auth } from "../auth";
 import { db } from "../db";
-import { guildConfig, GuildConfigSelect } from "../db/schema";
+import { guildConfig, GuildConfigSelect } from "@/lib/db/difference";
 import { authClient } from "./client";
 
 // export const loadGuilds = async () => {
@@ -18,3 +18,5 @@ export const inGuild = async (guildId: string) => {
   if (!data || !data[0]) return null;
   return data[0] as GuildConfigSelect;
 };
+
+

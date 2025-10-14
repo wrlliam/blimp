@@ -1,10 +1,10 @@
 import {
-  pgTable,
   text,
   boolean,
   json,
   date,
   pgSchema,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { MessageReference } from "discord.js";
 
@@ -13,6 +13,7 @@ export const backendSchema = pgSchema("backend");
 export const guildConfig = backendSchema.table("guild_config", {
   id: text("id").primaryKey(), // guild id
   disabledCommands: text("disabled_command").array().notNull().default([]),
+  customCommandPrefix: text("custom_command_prefix").default("!"),
 
   //Logging
   logsChannelId: text("logs_channel_id"),
@@ -71,3 +72,31 @@ export const infraction = backendSchema.table("infraction", {
 
 export type InfractionSelect = typeof infraction.$inferSelect;
 export type InfractionInsert = typeof infraction.$inferInsert;
+
+export const customCommand = backendSchema.table("custom_command", {
+  id: text("id").primaryKey(),
+  guildId: text("guild_id"),
+  createdBy: text("created_by_id"),
+  commandName: text("command_name"),
+  commandBody: text("command_body"),
+  created: timestamp("created_at", { withTimezone: true }).defaultNow(),
+})
+
+export type CCommandSelect = typeof customCommand.$inferSelect;
+export type CCommandInsert = typeof customCommand.$inferInsert;
+
+
+//Statistics
+
+export const messages = backendSchema.table("messages", {
+  id: text("id").primaryKey(), // message id,
+  userId: text("user_id").notNull(),
+  guildId: text("guild_id").notNull(),
+  bot: boolean("bot").default(false),
+  command: text("command_name").default(""),
+  created: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+export type MessagesSelect = typeof messages.$inferSelect;
+export type MessagesInsert = typeof messages.$inferInsert;
+

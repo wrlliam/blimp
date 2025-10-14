@@ -4,6 +4,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { HexColorPicker, HexColorInput } from "react-colorful";
 import {
+  capitlize,
   cn,
   createId,
   hexColorRegex,
@@ -110,7 +111,7 @@ export default function EmbedCreator(props: EmbedCreatorProps) {
       <div className="flex flex-row gap-3">
         <LabledInput
           className="w-full"
-          label="title*"
+          label="Title*"
           valid={() => (title && title.length >= 1) as boolean}
           value={title}
           setValue={setTitle}
@@ -124,7 +125,7 @@ export default function EmbedCreator(props: EmbedCreatorProps) {
           setValue={setTitleURL}
         />
         <div className={"flex flex-col gap-1"}>
-          <p className="uppercase text-xs opacity-60 font-semibold">Color</p>
+          <p className="text-xs opacity-60 font-semibold">Color</p>
           <Popover>
             <PopoverTrigger className="flex flex-row gap-2 items-center justify-center">
               <div
@@ -141,7 +142,12 @@ export default function EmbedCreator(props: EmbedCreatorProps) {
               />
             </PopoverTrigger>
             <PopoverContent className="mr-[3.5rem] w-fit flex flex-col items-center justify-center gap-[1rem]">
-              <HexColorPicker color={hexColor} onChange={setHexColor} />
+              <HexColorPicker
+                //!TODO: FIX THIS, CANT CLICK COLOUR DROPDOWN, MAYBE POINTER EVENTS
+                className="z-[50]"
+                color={hexColor}
+                onChange={setHexColor}
+              />
               <Input
                 className={`w-[80%] ${hexColorRegex.test(hexColor) ? "border-green-500/20" : "border-red-500/20"}`}
                 value={hexColor}
@@ -152,9 +158,7 @@ export default function EmbedCreator(props: EmbedCreatorProps) {
         </div>
       </div>
       <div className="flex flex-col gap-1">
-        <p className="uppercase text-xs opacity-60 font-semibold">
-          DESCRIPTION*
-        </p>
+        <p className="text-xs opacity-60 font-semibold">Description*</p>
         <Textarea
           className={`${description && description.length >= 1 ? "border-green-500/20" : "border-red-500/20"}`}
           value={description}
@@ -295,7 +299,7 @@ export default function EmbedCreator(props: EmbedCreatorProps) {
       </Accordion>
 
       <Button
-        variant={"default"}
+        variant={"main"}
         className="cursor-pointer"
         onClick={handleSaveEmbed}
       >
@@ -316,8 +320,8 @@ export type LabledInputProps = {
 export function LabledInput(props: LabledInputProps) {
   return (
     <div className={cn("flex flex-col gap-1", props.className)}>
-      <p className="uppercase text-xs opacity-60 font-semibold">
-        {props.label}
+      <p className="text-xs opacity-60 font-semibold">
+        {capitlize(props.label)}
       </p>
       <Input
         className={`${props.valid ? (props.valid() ? "border-green-500/20" : "border-red-500/20") : ""}`}
