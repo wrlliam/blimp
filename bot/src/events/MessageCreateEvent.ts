@@ -59,6 +59,7 @@ export default {
           .select()
           .from(customCommand)
           .where(eq(customCommand.commandName, commandName.toLowerCase()));
+          
         if (commandData && commandData[0]) {
           return (message.channel as TextChannel).send(
             JSON.parse(commandData[0].commandBody as string)

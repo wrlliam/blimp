@@ -82,7 +82,6 @@ export const analyticsModule = new Elysia({
 
       return output;
     } catch (e) {
-      console.log(e);
       return createErrorResponse("Failed to fetch messages.");
     }
   });

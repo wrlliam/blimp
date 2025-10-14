@@ -61,7 +61,6 @@ export const customCommandModule = new Elysia({
       const { auth } = context as unknown as { auth: AuthenticatedContext };
       const body = createCommandSchema.parse(context.body);
 
-      console.log(body);
       const id = createId();
       await db
         .insert(customCommand)

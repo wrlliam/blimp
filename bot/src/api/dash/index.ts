@@ -3,7 +3,7 @@ import { app } from "../..";
 import { z, ZodError } from "zod";
 import { db } from "@/db";
 import { guildConfig } from "@/db/schema";
-import { user } from "@/db/difference"
+import { user } from "@/db/difference";
 import { eq } from "drizzle-orm";
 import { err, info, warn } from "@/utils/logger";
 import { Command } from "@/core/typings";
@@ -165,7 +165,11 @@ export const createSuccessResponse = (data: any, status = 200) => {
   );
 };
 
-export const createErrorResponse = (message: string, status = 400, error?: any) => {
+export const createErrorResponse = (
+  message: string,
+  status = 400,
+  error?: any
+) => {
   const response: any = {
     ok: false,
     message,
@@ -298,7 +302,6 @@ export const dash = new Elysia({
         `Found ${r.length} guilds out of ${data.ids.length} requested`
       );
 
-      console.log(r);
       return new Response(
         JSON.stringify({
           ok: true,
@@ -533,6 +536,37 @@ export const dash = new Elysia({
     } catch (error) {
       err(`Error fetching config for guild ${auth.guild.id}: ${error}`);
       return createErrorResponse("Failed to fetch configuration", 500, error);
+    }
+  })
+  .get(`/guild/:id/channels`, async (context) => {
+    try {
+      const authResult = await createAuthMiddleware()(context);
+      if (authResult) return authResult;
+
+      const { auth } = context as unknown as { auth: AuthenticatedContext };
+
+      const guild = app.guilds.cache.find((f) => f.id === auth.guild.id);
+      console.log(guild)
+      if (!guild)
+        return createErrorResponse(
+          "Failed to find all channels. Please try again."
+        );
+
+      const channels = guild.channels.cache.toJSON();
+      console.log(channels.length)
+      if (!channels || channels.length <= 0)
+        return createErrorResponse(
+          "Failed to find all channels. Please try again."
+        );
+
+      return createSuccessResponse({
+        ok: true,
+        data: channels
+      })
+    } catch (e) {
+      return createErrorResponse(
+        "Failed to find all channels. Please try again."
+      );
     }
   })
 

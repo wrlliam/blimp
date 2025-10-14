@@ -299,7 +299,7 @@ export default function EmbedCreator(props: EmbedCreatorProps) {
       </Accordion>
 
       <Button
-        variant={"main"}
+        variant={"secondary"}
         className="cursor-pointer"
         onClick={handleSaveEmbed}
       >

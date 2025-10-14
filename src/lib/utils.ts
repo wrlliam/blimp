@@ -241,6 +241,7 @@ export type MessagePayloadCreationData = {
   content?: string;
   embeds?: (APIEmbed | undefined)[];
 };
+
 export const formMessagePayload = (data: MessagePayloadCreationData) => {
   let o = {} as MessagePayloadCreationData;
   if (data.embeds && data.embeds[0] && data.embeds.length > 0) {

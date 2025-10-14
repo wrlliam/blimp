@@ -129,7 +129,7 @@ export type GuildSidebarProps = {
 export default function GuildSidebar(props: GuildSidebarProps) {
   const { guilds } = useAvailableGuildStore();
   return (
-    <div className="flex flex-col w-[20vw] border-r border-blimp-border bg-dark-foreground h-[100vh] p-1 overflow-y-scroll overflow-x-hidden">
+    <div className="flex flex-col w-[20vw] border-r z-[30] border-blimp-border bg-dark-foreground h-screen sticky top-0 p-1 overflow-y-auto overflow-x-hidden">
       <GuildSidebarSelector guild={props.guild} guilds={guilds as Guild[]} />
       <GuildSidebarModules guild={props.guild} />
     </div>

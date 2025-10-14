@@ -18,6 +18,15 @@ export const guildConfig = backendSchema.table("guild_config", {
   id: text("id").primaryKey(), // guild id
   disabledCommands: text("disabled_command").array().notNull().default([]),
 
+  // welcome & goodbye
+  welcomeMessage: boolean("welcome_message").default(false),
+  welcomeMessageData: text("welcome_message_data"),
+  welcomeMessageChannel: text("welcome_message_channel"),
+
+  goodbyeMessage: boolean("goodbye_message").default(false),
+  goodbyeMessageData: text("goodbye_message_data"),
+  goodbyeMessageChannel: text("goodbye_message_channel"),
+  
   //Logging
   logsChannelId: text("logs_channel_id"),
   enabledLogs: text("enabled_loggers")
