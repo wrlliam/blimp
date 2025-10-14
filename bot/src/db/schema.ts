@@ -15,6 +15,10 @@ export const guildConfig = backendSchema.table("guild_config", {
   disabledCommands: text("disabled_command").array().notNull().default([]),
   customCommandPrefix: text("custom_command_prefix").default("!"),
 
+  // welcome & goodbye
+  welcomeMessage: boolean("welcome_messafe").default(false),
+  welcomeMessageData: text("welcome_message_data"),
+
   //Logging
   logsChannelId: text("logs_channel_id"),
   enabledLogs: text("enabled_loggers")
