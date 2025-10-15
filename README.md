@@ -8,7 +8,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Discord.js](https://img.shields.io/badge/Discord.js-14.x-5865F2?style=flat&logo=discord&logoColor=white)
 ![GitHub Stars](https://img.shields.io/github/stars/wrlliam/blimp?style=flat&color=yellow)
-![License](https://img.shields.io/badge/license-MIT-green?style=flat)
+![License](https://img.shields.io/badge/license-APACHIE-green?style=flat)
 
 </div>
 
