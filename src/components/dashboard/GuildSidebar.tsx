@@ -69,7 +69,7 @@ export const TABS = {
     },
     {
       name: "Embed & Messages",
-      href: "/embed-and-messages",
+      href: "/embeds-and-messages",
       icon: <MessageSquare width={15} height={15} />,
       pro: false,
     },

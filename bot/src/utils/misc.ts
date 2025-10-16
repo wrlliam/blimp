@@ -9,6 +9,7 @@ import {
   Sticker,
 } from "discord.js";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 
 export function createId(length: number = 35) {
   let str = "QWERTYUIOASDFGHJKLZXCVBNMqwertyuioasdfghjklzxcvbnm1234567890---";
@@ -200,3 +201,8 @@ export const createCustomVariableFormatter = (
     return result;
   };
 };
+
+export const messagePayloadSchema = z.object({
+  content: z.string().optional(),
+  embeds: z.any().array().optional(),
+});

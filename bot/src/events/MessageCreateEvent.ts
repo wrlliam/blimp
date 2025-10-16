@@ -1,19 +1,24 @@
-import type { ClientEvents, Message, TextChannel } from "discord.js";
+import type {
+  APIEmbed,
+  ClientEvents,
+  GuildMember,
+  Message,
+  TextChannel,
+} from "discord.js";
 import type { Event } from "../core/typings";
 import { app } from "..";
-import {
-  customCommand,
-  guildConfig,
-  messages,
-} from "@/db/schema";
+import { customCommand, guildConfig, leveling, messages } from "@/db/schema";
 import { db } from "@/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { err, info } from "../utils/logger";
+import Leveling, { generateBoilerPlateLevels } from "@/modules/leveling";
+import { memo } from "react";
+import { messagePayloadSchema, variableFormat } from "@/utils";
 
 export default {
   name: "messageCreate",
   run: async (message: Message) => {
-    if (message.guild) {
+    if (message.guild && !message.author.bot) {
       const data = await db
         .select()
         .from(guildConfig)
@@ -41,7 +46,17 @@ export default {
         .select()
         .from(guildConfig)
         .where(eq(guildConfig.id, message.guild.id));
-        
+
+      if (guildConfigData[0].leveling) {
+        const levelingModule = new Leveling();
+
+        if ((await levelingModule.getLevels(message.guild)).length <= 0) {
+          generateBoilerPlateLevels(message.guild);
+        }
+
+        levelingModule.messageLogic(message.member as GuildMember, message);
+      }
+
       if (
         guildConfigData &&
         guildConfigData[0] &&
@@ -59,11 +74,46 @@ export default {
           .select()
           .from(customCommand)
           .where(eq(customCommand.commandName, commandName.toLowerCase()));
-          
+
+
         if (commandData && commandData[0]) {
-          return (message.channel as TextChannel).send(
+          const body = messagePayloadSchema.parse(
             JSON.parse(commandData[0].commandBody as string)
           );
+
+          if (body.content) {
+            body["content"] = variableFormat(
+              body.content,
+              message.guild,
+              message.member as GuildMember
+            );
+          }
+
+          if (body.embeds && body.embeds.length > 0) {
+            const embeds: APIEmbed[] = [];
+            for (let i = 0; i < body.embeds.length; i++) {
+              const e = body.embeds[i] as APIEmbed;
+              const embed = {
+                ...e,
+              } as APIEmbed;
+
+              if (embed.description) {
+                embed["description"] = variableFormat(
+                  embed.description,
+                  message.guild,
+                  message.member as GuildMember
+                );
+              }
+
+              embeds.push(embed);
+            }
+
+            body["embeds"] = embeds;
+          }
+
+    
+
+          return (message.channel as TextChannel).send(body);
         }
       }
 

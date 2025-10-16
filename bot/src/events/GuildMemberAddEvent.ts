@@ -11,12 +11,7 @@ import {
 } from "discord.js";
 import config from "@/config";
 import { z } from "zod";
-import { variableFormat } from "@/utils";
-
-const welcomeData = z.object({
-  content: z.string().optional(),
-  embeds: z.object({}).array().optional(),
-});
+import { messagePayloadSchema, variableFormat } from "@/utils";
 
 export default {
   name: Events.GuildMemberAdd,
@@ -56,7 +51,7 @@ export default {
     }
 
     if (gConfig.welcomeMessage && gConfig.welcomeMessageData) {
-      const body = welcomeData.parse(JSON.parse(gConfig.welcomeMessageData));
+      const body = messagePayloadSchema.parse(JSON.parse(gConfig.welcomeMessageData));
 
       const channel = member.guild.channels.cache.find(
         (f) => f.id === gConfig.welcomeMessageChannel
@@ -76,9 +71,9 @@ export default {
             ...e,
           } as APIEmbed;
 
-          if (e.description) {
-            e["description"] = variableFormat(
-              e.description,
+          if (embed.description) {
+            embed["description"] = variableFormat(
+              embed.description,
               member.guild,
               member
             );

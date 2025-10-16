@@ -11,7 +11,7 @@ import {
 } from "discord.js";
 import config from "@/config";
 import { z } from "zod";
-import { variableFormat } from "@/utils";
+import { messagePayloadSchema, variableFormat } from "@/utils";
 
 const goodbyeData = z.object({
   content: z.string().optional(),
@@ -50,7 +50,7 @@ export default {
       await channel.send({ embeds: [embed] });
     }
     if (gConfig.goodbyeMessage && gConfig.goodbyeMessageData) {
-      const body = goodbyeData.parse(JSON.parse(gConfig.goodbyeMessageData));
+      const body = messagePayloadSchema.parse(JSON.parse(gConfig.goodbyeMessageData));
 
       const channel = member.guild.channels.cache.find(
         (f) => f.id === gConfig.goodbyeMessageChannel
@@ -70,9 +70,9 @@ export default {
             ...e,
           } as APIEmbed;
 
-          if (e.description) {
-            e["description"] = variableFormat(
-              e.description,
+          if (embed.description) {
+            embed["description"] = variableFormat(
+              embed.description,
               member.guild,
               member
             );

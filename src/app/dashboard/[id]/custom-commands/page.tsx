@@ -348,42 +348,46 @@ export default function CustomCommands() {
             />
           </div>
 
-          <Accordion type="multiple" className="mt-[2rem]">
-            {customCommands
-              ?.filter((f) =>
-                f.commandName?.toLowerCase().includes(search.toLowerCase())
-              )
-              .map((ccommand, i) => {
-                return (
-                  <AccordionItem value={ccommand.id} key={i}>
-                    <AccordionTrigger>
-                      <div className="flex flex-row items-center justify-start gap-3">
-                        {prefix}
-                        {ccommand.commandName}
-                        <p className="text-xs opacity-20">
-                          {new Date(
-                            ccommand.created as Date
-                          ).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <Button
-                        variant={"destructive"}
-                        onClick={() =>
-                          deleteCommandLogic(
-                            ccommand.id,
-                            ccommand.commandName as string
-                          )
-                        }
-                      >
-                        Delete
-                      </Button>
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-          </Accordion>
+          {customCommands?.length as number <= 0 ? (
+            <p className="opacity-20 mt-[2rem]">No existing custom commands..</p>
+          ) : (
+            <Accordion type="multiple" className="mt-[2rem]">
+              {customCommands
+                ?.filter((f) =>
+                  f.commandName?.toLowerCase().includes(search.toLowerCase())
+                )
+                .map((ccommand, i) => {
+                  return (
+                    <AccordionItem value={ccommand.id} key={i}>
+                      <AccordionTrigger>
+                        <div className="flex flex-row items-center justify-start gap-3">
+                          {prefix}
+                          {ccommand.commandName}
+                          <p className="text-xs opacity-20">
+                            {new Date(
+                              ccommand.created as Date
+                            ).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <Button
+                          variant={"destructive"}
+                          onClick={() =>
+                            deleteCommandLogic(
+                              ccommand.id,
+                              ccommand.commandName as string
+                            )
+                          }
+                        >
+                          Delete
+                        </Button>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+            </Accordion>
+          )}
         </CardContent>
       </Card>
     </div>

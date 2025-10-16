@@ -4,6 +4,7 @@ import { reactionRolesModule } from "./reaction-roles";
 import { analyticsModule } from "./analytics";
 import { customCommandModule } from "./custom-command";
 import { welcomeAndGoodbyeModule } from "./welcome-and-goodbye";
+import { embedAndMessagesModule } from "./embed-and-messages";
 
 export const modules = new Elysia({
   prefix: "/modules",
@@ -11,4 +12,5 @@ export const modules = new Elysia({
   .use(reactionRolesModule)
   .use(analyticsModule)
   .use(customCommandModule)
-  .use(welcomeAndGoodbyeModule);
+  .use(welcomeAndGoodbyeModule)
+  .use(embedAndMessagesModule);

@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+ 
+  // experimental: {
+  //  g``
+  // },
 };
 
 export default nextConfig;

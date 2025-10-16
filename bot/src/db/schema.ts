@@ -5,6 +5,7 @@ import {
   date,
   pgSchema,
   timestamp,
+  integer,
 } from "drizzle-orm/pg-core";
 import { MessageReference } from "discord.js";
 
@@ -23,6 +24,10 @@ export const guildConfig = backendSchema.table("guild_config", {
   goodbyeMessage: boolean("goodbye_message").default(false),
   goodbyeMessageData: text("goodbye_message_data"),
   goodbyeMessageChannel: text("goodbye_message_channel"),
+
+  // leveling
+  leveling: boolean("leveling").default(false),
+  // levelingRoles: text("leveling_roles").array().default([]), // { level: "NUMBER", roleId: "ROLE_ID" }
 
   //Logging
   logsChannelId: text("logs_channel_id"),
@@ -89,11 +94,10 @@ export const customCommand = backendSchema.table("custom_command", {
   commandName: text("command_name"),
   commandBody: text("command_body"),
   created: timestamp("created_at", { withTimezone: true }).defaultNow(),
-})
+});
 
 export type CCommandSelect = typeof customCommand.$inferSelect;
 export type CCommandInsert = typeof customCommand.$inferInsert;
-
 
 //Statistics
 
@@ -109,3 +113,50 @@ export const messages = backendSchema.table("messages", {
 export type MessagesSelect = typeof messages.$inferSelect;
 export type MessagesInsert = typeof messages.$inferInsert;
 
+export const leveling = backendSchema.table("leveling", {
+  id: text("id").primaryKey(), // message id,
+  userId: text("user_id").notNull(),
+  guildId: text("guild_id").notNull(),
+  xp: integer("xp").default(0).notNull(),
+  levelId: text("level_id"),
+});
+
+export type LevelingSelect = typeof leveling.$inferSelect;
+export type LevelingInsert = typeof leveling.$inferInsert;
+
+export const guildLevel = backendSchema.table("guild_level", {
+  id: text("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  xpRequired: integer("required_xp").default(125),
+  level: integer("level"),
+  roleId: text("role_id"),
+});
+
+export type GuildLevelSelect = typeof guildLevel.$inferSelect;
+export type GuildLevelInsert = typeof guildLevel.$inferInsert;
+
+export const guildLevelMultiplier = backendSchema.table(
+  "guild_level_multiplier",
+  {
+    id: text("id").primaryKey(),
+    guildId: text("guild_id").notNull(),
+    name: text("name"),
+    multiplier: integer("mulitplier").default(2),
+    roleId: text("role_id"),
+  }
+);
+``;
+
+export type GuildLevelMultiSelect = typeof guildLevelMultiplier.$inferSelect;
+export type GuildLevelMultiInsert = typeof guildLevelMultiplier.$inferInsert;
+
+export const messageAndEmbeds = backendSchema.table("message_and_embeds", {
+  id: text("id").primaryKey(), // Message ID
+  guildId: text("guild_id").notNull(),
+  name: text("name"),
+  body: text("body"),
+  created: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+export type MessageAndEmbedsSelect = typeof messageAndEmbeds.$inferSelect;
+export type MessageAndEmbedsInsert = typeof messageAndEmbeds.$inferInsert;

@@ -1,6 +1,6 @@
 export default {
   colors: {
-    default: "#6c1228",
+    default: "#fba000",
     error: "#fb2c36",
     success: "#00c951",
     info: "#2b7fff",

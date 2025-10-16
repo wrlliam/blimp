@@ -26,7 +26,12 @@ export const guildConfig = backendSchema.table("guild_config", {
   goodbyeMessage: boolean("goodbye_message").default(false),
   goodbyeMessageData: text("goodbye_message_data"),
   goodbyeMessageChannel: text("goodbye_message_channel"),
-  
+
+  // leveling
+
+  leveling: boolean("leveling").default(false),
+  levelingRoles: text("leveling_roles").array(), // { level: "NUMBER", roleId: "ROLE_ID" }
+
   //Logging
   logsChannelId: text("logs_channel_id"),
   enabledLogs: text("enabled_loggers")
