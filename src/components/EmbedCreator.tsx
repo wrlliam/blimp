@@ -25,7 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 export type EmbedCreatorProps = {
   state: APIEmbed | undefined;
-  setState: Dispatch<SetStateAction<APIEmbed | undefined>>;
+  setState?: Dispatch<SetStateAction<APIEmbed | undefined>>;
 };
 
 export type EmbedField = {
@@ -89,7 +89,9 @@ export default function EmbedCreator(props: EmbedCreatorProps) {
   };
 
   const handleSaveEmbed = () => {
-    props.setState(buildEmbedObject());
+    if (props.setState) {
+      props.setState(buildEmbedObject());
+    }
   };
 
   const updateField = (

@@ -57,3 +57,15 @@ export const customCommand = backendSchema.table("custom_command", {
 
 export type CCommandSelect = typeof customCommand.$inferSelect;
 export type CCommandInsert = typeof customCommand.$inferInsert;
+
+export const messageAndEmbeds = backendSchema.table("message_and_embeds", {
+  id: text("id").primaryKey(), // Message ID
+  guildId: text("guild_id").notNull(),
+  channelId: text("channel_id"),
+  name: text("name"),
+  body: text("body"),
+  created: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+export type MessageAndEmbedsSelect = typeof messageAndEmbeds.$inferSelect;
+export type MessageAndEmbedsInsert = typeof messageAndEmbeds.$inferInsert;

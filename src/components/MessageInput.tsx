@@ -6,10 +6,10 @@ import { APIEmbed } from "discord.js";
 
 export type MessageInputProps = {
   message: string;
-  setMessage: React.Dispatch<SetStateAction<string>>;
+  setMessage?: React.Dispatch<SetStateAction<string>>;
 
   embed: APIEmbed | undefined;
-  setEmbed: React.Dispatch<SetStateAction<APIEmbed | undefined>>;
+  setEmbed?: React.Dispatch<SetStateAction<APIEmbed | undefined>>;
 };
 
 export default function MessageInput({
@@ -33,7 +33,7 @@ export default function MessageInput({
         <Textarea
           value={message}
           className={`min-h-[200px] ${message && message.length >= 1 ? "border-green-500/20" : "border-red-500/20"}`}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => setMessage ? setMessage(e.target.value) : null}
         />
       </TabsContent>
       <TabsContent value="embed">

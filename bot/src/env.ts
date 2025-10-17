@@ -11,6 +11,8 @@ export const env = createEnv({
 
     API_PORT: z.string(),
     GUILD_ID: z.string(),
+
+    TOKEN: z.string()
   },
   client: {},
   runtimeEnv: {
@@ -20,5 +22,6 @@ export const env = createEnv({
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
     API_PORT: process.env.API_PORT,
     GUILD_ID: process.env.GUILD_ID,
+    TOKEN: process.env.TOKEN
   },
 });
