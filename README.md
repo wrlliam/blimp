@@ -23,7 +23,6 @@ Blimp is a powerful Discord bot with an intuitive web dashboard, designed to str
 
 - 🏷️ **Tags** - Create custom commands with dynamic responses
 - 👋 **Welcome & Goodbye** - Automated member greet and farewell messages
-- 🔐 **Secure API** - Protected endpoints with bearer token authentication
 
 ### Coming Soon
 

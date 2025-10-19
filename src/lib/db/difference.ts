@@ -1,4 +1,4 @@
-import { boolean, date, pgSchema, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, date, integer, pgSchema, text, timestamp } from "drizzle-orm/pg-core";
 
 export const backendSchema = pgSchema("backend");
 
@@ -69,3 +69,40 @@ export const messageAndEmbeds = backendSchema.table("message_and_embeds", {
 
 export type MessageAndEmbedsSelect = typeof messageAndEmbeds.$inferSelect;
 export type MessageAndEmbedsInsert = typeof messageAndEmbeds.$inferInsert;
+
+export const leveling = backendSchema.table("leveling", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  guildId: text("guild_id").notNull(),
+  xp: integer("xp").default(0).notNull(),
+  levelId: text("level_id"),
+});
+
+export type LevelingSelect = typeof leveling.$inferSelect;
+export type LevelingInsert = typeof leveling.$inferInsert;
+
+export const guildLevel = backendSchema.table("guild_level", {
+  id: text("id").primaryKey(),
+  guildId: text("guild_id").notNull(),
+  xpRequired: integer("required_xp").default(125),
+  level: integer("level"),
+  roleId: text("role_id"),
+});
+
+export type GuildLevelSelect = typeof guildLevel.$inferSelect;
+export type GuildLevelInsert = typeof guildLevel.$inferInsert;
+
+export const guildLevelMultiplier = backendSchema.table(
+  "guild_level_multiplier",
+  {
+    id: text("id").primaryKey(),
+    guildId: text("guild_id").notNull(),
+    name: text("name"),
+    multiplier: integer("mulitplier").default(2),
+    roleId: text("role_id"),
+  }
+);
+``;
+
+export type GuildLevelMultiSelect = typeof guildLevelMultiplier.$inferSelect;
+export type GuildLevelMultiInsert = typeof guildLevelMultiplier.$inferInsert;

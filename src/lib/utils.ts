@@ -260,3 +260,6 @@ export const formMessagePayload = (data: MessagePayloadCreationData) => {
   return o;
 };
 
+
+// Purely for intellisense
+export const tw = (str: TemplateStringsArray) => str;

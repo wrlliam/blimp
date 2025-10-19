@@ -29,6 +29,8 @@ export const guildConfig = backendSchema.table("guild_config", {
   leveling: boolean("leveling").default(false),
   // levelingRoles: text("leveling_roles").array().default([]), // { level: "NUMBER", roleId: "ROLE_ID" }
 
+
+
   //Logging
   logsChannelId: text("logs_channel_id"),
   enabledLogs: text("enabled_loggers")
@@ -114,7 +116,7 @@ export type MessagesSelect = typeof messages.$inferSelect;
 export type MessagesInsert = typeof messages.$inferInsert;
 
 export const leveling = backendSchema.table("leveling", {
-  id: text("id").primaryKey(), // message id,
+  id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
   guildId: text("guild_id").notNull(),
   xp: integer("xp").default(0).notNull(),

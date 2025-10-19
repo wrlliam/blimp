@@ -5,6 +5,7 @@ import { analyticsModule } from "./analytics";
 import { customCommandModule } from "./custom-command";
 import { welcomeAndGoodbyeModule } from "./welcome-and-goodbye";
 import { embedAndMessagesModule } from "./embed-and-messages";
+import { levelingModule } from "./leveling";
 
 export const modules = new Elysia({
   prefix: "/modules",
@@ -13,4 +14,5 @@ export const modules = new Elysia({
   .use(analyticsModule)
   .use(customCommandModule)
   .use(welcomeAndGoodbyeModule)
-  .use(embedAndMessagesModule);
+  .use(embedAndMessagesModule)
+  .use(levelingModule)
