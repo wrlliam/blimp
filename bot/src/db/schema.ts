@@ -27,9 +27,14 @@ export const guildConfig = backendSchema.table("guild_config", {
 
   // leveling
   leveling: boolean("leveling").default(false),
+  levelingMessage: text("leveling_message").$defaultFn(() =>
+    JSON.stringify({
+      content:
+        "Congrats on leveling up <@$user.id$>! You are now **level $user.level$**",
+      embeds: [null],
+    })
+  ),
   // levelingRoles: text("leveling_roles").array().default([]), // { level: "NUMBER", roleId: "ROLE_ID" }
-
-
 
   //Logging
   logsChannelId: text("logs_channel_id"),
@@ -155,7 +160,7 @@ export type GuildLevelMultiInsert = typeof guildLevelMultiplier.$inferInsert;
 export const messageAndEmbeds = backendSchema.table("message_and_embeds", {
   id: text("id").primaryKey(), // Message ID
   guildId: text("guild_id").notNull(),
-  channelId: text('channel_id'),
+  channelId: text("channel_id"),
   name: text("name"),
   body: text("body"),
   created: timestamp("created_at", { withTimezone: true }).defaultNow(),

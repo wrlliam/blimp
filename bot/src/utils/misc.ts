@@ -1,6 +1,12 @@
 import { app } from "..";
 import { db } from "@/db";
-import { guildConfig } from "@/db/schema";
+import {
+  guildConfig,
+  guildLevel,
+  GuildLevelSelect,
+  leveling,
+  LevelingSelect,
+} from "@/db/schema";
 import {
   APIEmbed,
   Guild,
@@ -8,7 +14,7 @@ import {
   PermissionsBitField,
   Sticker,
 } from "discord.js";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 export function createId(length: number = 35) {
@@ -101,13 +107,61 @@ export const formMessagePayload = (data: MessagePayloadCreationData) => {
 
 type VariableResolver = () => string | null | undefined;
 
-export const variableFormat = (
+export const variableFormat = async (
   content: string,
   guild: Guild | undefined,
   user: GuildMember | undefined
-): string => {
+): Promise<string> => {
   const now = new Date();
 
+  const rawLevelingData = await db
+    .select()
+    .from(leveling)
+    .where(
+      and(
+        eq(leveling.guildId, guild?.id as string),
+        eq(leveling.userId, user?.id as string)
+      )
+    );
+
+  // console.log(rawLevelingData)
+
+  const levelingData = async (): Promise<
+    LevelingSelect & {
+      level: GuildLevelSelect;
+    }
+  > => {
+    const data = (
+      rawLevelingData && rawLevelingData[0] ? rawLevelingData[0] : null
+    ) as LevelingSelect;
+    const rawLevel = await db
+      .select()
+      .from(guildLevel)
+      .where(
+        and(
+          eq(guildLevel.guildId, guild?.id as string),
+          eq(guildLevel.id, data?.levelId as string)
+        )
+      );
+
+    const level =
+      rawLevel && rawLevel[0]
+        ? rawLevel[0]
+        : ({
+            guildId: guild?.id,
+            id: "",
+            level: 0,
+            roleId: "",
+            xpRequired: 0,
+          } as GuildLevelSelect);
+
+    return {
+      ...data,
+      level,
+    };
+  };
+
+  const levelingDataFormat = await levelingData();
   const variables: Record<string, VariableResolver> = {
     "$user.username$": () => user?.user.username,
     "$user.displayname$": () => user?.displayName,
@@ -125,6 +179,9 @@ export const variableFormat = (
     "$user.roles$": () => user?.roles.cache.size.toString(),
     "$user.rolecount$": () => user?.roles.cache.size.toString(),
     "$user.bot$": () => (user?.user.bot ? "Yes" : "No"),
+
+    "$user.level$": () => levelingDataFormat.level.level?.toString(),
+    "$user.xp$": () => levelingDataFormat.xp.toString(),
 
     "$guild.name$": () => guild?.name,
     "$guild.id$": () => guild?.id,
@@ -177,15 +234,15 @@ export const variableFormat = (
   return result;
 };
 
-export const createCustomVariableFormatter = (
+export const createCustomVariableFormatter = async (
   customVariables: Record<string, VariableResolver>
 ) => {
-  return (
+  return async (
     content: string,
     guild: Guild | undefined,
     user: GuildMember | undefined
-  ): string => {
-    let result = variableFormat(content, guild, user);
+  ): Promise<string> => {
+    let result = await variableFormat(content, guild, user);
 
     for (const [key, resolver] of Object.entries(customVariables)) {
       if (result.includes(key)) {
@@ -206,3 +263,38 @@ export const messagePayloadSchema = z.object({
   content: z.string().optional(),
   embeds: z.any().array().optional(),
 });
+
+export const formatVariableBody = async (
+  data: string,
+  member: GuildMember,
+  guild: Guild
+) => {
+  const body = messagePayloadSchema.parse(JSON.parse(data));
+
+  if (body.content) {
+    body["content"] = await variableFormat(body.content, guild, member);
+  }
+
+  if (body.embeds && body.embeds.length > 0) {
+    const embeds: (APIEmbed | null)[] = [];
+    for (let i = 0; i < body.embeds.length; i++) {
+      const e = body.embeds[i] as APIEmbed;
+      const embed = {
+        ...e,
+      } as APIEmbed;
+
+      if (embed.description) {
+        embed["description"] = await variableFormat(
+          embed.description,
+          member.guild,
+          member
+        );
+      }
+
+      embeds.push(embed && embed.description && embed.title ? embed : null);
+    }
+
+    body["embeds"] = embeds;
+  }
+  return body;
+};

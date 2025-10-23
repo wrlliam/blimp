@@ -214,6 +214,33 @@ export const dash = new Elysia({
   // Health check endpoint
   .get("/health", () => createSuccessResponse({ status: "healthy" }))
 
+  .get("/guild/:id/roles", async (context) => {
+    const authResult = await createAuthMiddleware()(context);
+    if (authResult) return authResult;
+
+    const { auth } = context as unknown as { auth: AuthenticatedContext };
+
+    try {
+      const roles = auth.guild.roles.cache
+        .toJSON()
+        .filter((role) => !role.managed && role.id !== auth.guild.id)
+        .sort((a, b) => b.position - a.position);
+
+      const highestBotRole = auth.guild.members.cache.find(
+        (f) => f.id === app.user?.id
+      )?.roles.highest;
+
+      info(`User ${auth.userId} fetched roles for guild ${auth.guild.id}`);
+      return createSuccessResponse({
+        roles: roles,
+        highestBotRole,
+      });
+    } catch (error) {
+      err(`Error fetching channels for guild ${auth.guild.id}: ${error}`);
+      return createErrorResponse("Failed to fetch channels", 500, error);
+    }
+  })
+
   // Get guild channels
   .get("/guild/:id/channels", async (context) => {
     const authResult = await createAuthMiddleware()(context);
@@ -267,10 +294,10 @@ export const dash = new Elysia({
       }
 
       const data = guildsSchema.parse(body);
-      console.log("Received guild IDs:", data.ids);
+      // console.log("Received guild IDs:", data.ids);
 
       if (!Array.isArray(data.ids) || data.ids.length === 0) {
-        console.error("No valid guild IDs received");
+        // console.error("No valid guild IDs received");
         return new Response(
           JSON.stringify({
             ok: false,
@@ -286,21 +313,21 @@ export const dash = new Elysia({
       for (let i = 0; i < data.ids.length; i++) {
         const id = data.ids[i].id;
         if (!id || typeof id !== "string") {
-          console.warn(`Invalid guild ID format: ${JSON.stringify(id)}`);
+          // console.warn(`Invalid guild ID format: ${JSON.stringify(id)}`);
           continue;
         }
         const guild = app.guilds.cache.find((f) => f.id === id);
-        console.log(
-          `Checking guild ID ${id}: ${guild ? "Found" : "Not found"}`
-        );
+        // console.log(
+        //   `Checking guild ID ${id}: ${guild ? "Found" : "Not found"}`
+        // );
         if (guild && guild.members.cache.has(userSchema[0].user_id as string)) {
           r.push(guild);
         }
       }
 
-      console.log(
-        `Found ${r.length} guilds out of ${data.ids.length} requested`
-      );
+      // console.log(
+      //   `Found ${r.length} guilds out of ${data.ids.length} requested`
+      // );
 
       return new Response(
         JSON.stringify({
@@ -357,25 +384,25 @@ export const dash = new Elysia({
   })
 
   // Get all roles in guild
-  .get("/guild/:id/roles", async (context) => {
-    const authResult = await createAuthMiddleware()(context);
-    if (authResult) return authResult;
+  // .get("/guild/:id/roles", async (context) => {
+  //   const authResult = await createAuthMiddleware()(context);
+  //   if (authResult) return authResult;
 
-    const { auth } = context as unknown as { auth: AuthenticatedContext };
+  //   const { auth } = context as unknown as { auth: AuthenticatedContext };
 
-    try {
-      const roles = auth.guild.roles.cache
-        .toJSON()
-        .filter((role) => !role.managed && role.id !== auth.guild.id)
-        .sort((a, b) => b.position - a.position); // Sort by position (highest first)
+  //   try {
+  //     const roles = auth.guild.roles.cache
+  //       .toJSON()
+  //       .filter((role) => !role.managed && role.id !== auth.guild.id)
+  //       .sort((a, b) => b.position - a.position); // Sort by position (highest first)
 
-      info(`User ${auth.userId} fetched roles for guild ${auth.guild.id}`);
-      return createSuccessResponse(roles);
-    } catch (error) {
-      err(`Error fetching roles for guild ${auth.guild.id}: ${error}`);
-      return createErrorResponse("Failed to fetch roles", 500, error);
-    }
-  })
+  //     info(`User ${auth.userId} fetched roles for guild ${auth.guild.id}`);
+  //     return createSuccessResponse(roles);
+  //   } catch (error) {
+  //     err(`Error fetching roles for guild ${auth.guild.id}: ${error}`);
+  //     return createErrorResponse("Failed to fetch roles", 500, error);
+  //   }
+  // })
 
   // Get guild information
   .get("/guild/:id", async (context) => {
@@ -546,14 +573,14 @@ export const dash = new Elysia({
       const { auth } = context as unknown as { auth: AuthenticatedContext };
 
       const guild = app.guilds.cache.find((f) => f.id === auth.guild.id);
-      console.log(guild)
+      // console.log(guild);
       if (!guild)
         return createErrorResponse(
           "Failed to find all channels. Please try again."
         );
 
       const channels = guild.channels.cache.toJSON();
-      console.log(channels.length)
+      // console.log(channels.length);
       if (!channels || channels.length <= 0)
         return createErrorResponse(
           "Failed to find all channels. Please try again."
@@ -561,8 +588,8 @@ export const dash = new Elysia({
 
       return createSuccessResponse({
         ok: true,
-        data: channels
-      })
+        data: channels,
+      });
     } catch (e) {
       return createErrorResponse(
         "Failed to find all channels. Please try again."

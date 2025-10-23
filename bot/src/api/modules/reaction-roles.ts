@@ -231,7 +231,7 @@ export const reactionRolesModule = new Elysia({
       );
     } catch (e) {
       const err = e as ZodError;
-      console.log(err);
+      // console.log(err);
       return new Response(
         JSON.stringify({
           ok: false,

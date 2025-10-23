@@ -208,7 +208,7 @@ export const embedAndMessagesModule = new Elysia({
           );
         });
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       return createErrorResponse(
         "Unable to update message, please try again later."
       );

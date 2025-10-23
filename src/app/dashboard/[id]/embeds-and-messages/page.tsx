@@ -21,7 +21,7 @@ import { useMutation } from "@tanstack/react-query";
 import { betterFetch } from "@better-fetch/fetch";
 import { env } from "@/env";
 import { User } from "@/lib/auth/client";
-import { fetchChannels } from "@/components/fetchChannels";
+import { fetchChannels } from "@/components/fetchMass";
 import {
   Select,
   SelectContent,

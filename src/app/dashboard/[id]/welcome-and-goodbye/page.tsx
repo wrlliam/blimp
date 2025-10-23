@@ -20,7 +20,7 @@ import MessageInput from "@/components/MessageInput";
 import VariableHelp from "@/components/VariableHelp";
 import { Button } from "@/components/ui/button";
 import { formMessagePayload, MessagePayloadCreationData } from "@/lib/utils";
-import { fetchChannels } from "@/components/fetchChannels";
+import { fetchChannels } from "@/components/fetchMass";
 import { User } from "@/lib/auth/client";
 import {
   Select,
@@ -350,7 +350,6 @@ export function Goodbye() {
   });
 
   const updateData = () => {
-    
     updateGoodbyeAsync({
       goodbyeMessage: toggle,
       goodbyeMessageChannel: messageChannelId,

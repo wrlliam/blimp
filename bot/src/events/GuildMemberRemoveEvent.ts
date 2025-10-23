@@ -59,7 +59,7 @@ export default {
       if (!channel) return;
 
       if (body.content) {
-        body["content"] = variableFormat(body.content, member.guild, member);
+        body["content"] = await variableFormat(body.content, member.guild, member);
       }
 
       if (body.embeds && body.embeds.length > 0) {
@@ -71,7 +71,7 @@ export default {
           } as APIEmbed;
 
           if (embed.description) {
-            embed["description"] = variableFormat(
+            embed["description"] = await variableFormat(
               embed.description,
               member.guild,
               member

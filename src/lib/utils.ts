@@ -260,6 +260,29 @@ export const formMessagePayload = (data: MessagePayloadCreationData) => {
   return o;
 };
 
-
 // Purely for intellisense
 export const tw = (str: TemplateStringsArray) => str;
+
+// Claude ❤️
+
+/**
+ * Converts a Discord color number (decimal) to a hex color code
+ * @param discordColor - The Discord color as a decimal number (0-16777215)
+ * @returns The hex color code as a string (e.g., "#5865F2")
+ * @throws Error if the color number is invalid
+ */
+export function discordColorToHex(discordColor: number): string {
+  // Validate input
+  if (!Number.isInteger(discordColor)) {
+    throw new Error("Discord color must be an integer");
+  }
+
+  if (discordColor < 0 || discordColor > 16777215) {
+    throw new Error("Discord color must be between 0 and 16777215");
+  }
+
+  // Convert to hex and pad with zeros if necessary
+  const hex = discordColor.toString(16).toUpperCase().padStart(6, "0");
+
+  return `#${hex}`;
+}

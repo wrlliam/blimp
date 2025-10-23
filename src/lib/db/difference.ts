@@ -1,4 +1,11 @@
-import { boolean, date, integer, pgSchema, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  date,
+  integer,
+  pgSchema,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 export const backendSchema = pgSchema("backend");
 
@@ -30,7 +37,9 @@ export const guildConfig = backendSchema.table("guild_config", {
   // leveling
 
   leveling: boolean("leveling").default(false),
-  levelingRoles: text("leveling_roles").array(), // { level: "NUMBER", roleId: "ROLE_ID" }
+  levelingMessage: text("leveling_message").default(
+    "Congrats on leveling up <@$user.id>! You are now **level $user.level$**"
+  ),
 
   //Logging
   logsChannelId: text("logs_channel_id"),
@@ -85,8 +94,8 @@ export const guildLevel = backendSchema.table("guild_level", {
   id: text("id").primaryKey(),
   guildId: text("guild_id").notNull(),
   xpRequired: integer("required_xp").default(125),
-  level: integer("level"),
-  roleId: text("role_id"),
+  level: integer("level").notNull(),
+  roleId: text("role_id").notNull(),
 });
 
 export type GuildLevelSelect = typeof guildLevel.$inferSelect;

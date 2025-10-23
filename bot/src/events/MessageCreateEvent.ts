@@ -6,13 +6,11 @@ import type {
   TextChannel,
 } from "discord.js";
 import type { Event } from "../core/typings";
-import { app } from "..";
-import { customCommand, guildConfig, leveling, messages } from "@/db/schema";
+import { customCommand, guildConfig, messages } from "@/db/schema";
 import { db } from "@/db";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { err, info } from "../utils/logger";
 import Leveling, { generateBoilerPlateLevels } from "@/modules/leveling";
-import { memo } from "react";
 import { messagePayloadSchema, variableFormat } from "@/utils";
 
 export default {
@@ -52,9 +50,9 @@ export default {
 
         if ((await levelingModule.getLevels(message.guild)).length <= 0) {
           generateBoilerPlateLevels(message.guild);
+        } else {
+          levelingModule.messageLogic(message.member as GuildMember, message);
         }
-
-        levelingModule.messageLogic(message.member as GuildMember, message);
       }
 
       if (
@@ -75,14 +73,13 @@ export default {
           .from(customCommand)
           .where(eq(customCommand.commandName, commandName.toLowerCase()));
 
-
         if (commandData && commandData[0]) {
           const body = messagePayloadSchema.parse(
             JSON.parse(commandData[0].commandBody as string)
           );
 
           if (body.content) {
-            body["content"] = variableFormat(
+            body["content"] = await variableFormat(
               body.content,
               message.guild,
               message.member as GuildMember
@@ -98,7 +95,7 @@ export default {
               } as APIEmbed;
 
               if (embed.description) {
-                embed["description"] = variableFormat(
+                embed["description"] = await variableFormat(
                   embed.description,
                   message.guild,
                   message.member as GuildMember
@@ -110,8 +107,6 @@ export default {
 
             body["embeds"] = embeds;
           }
-
-    
 
           return (message.channel as TextChannel).send(body);
         }
