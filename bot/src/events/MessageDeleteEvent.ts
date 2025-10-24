@@ -9,7 +9,7 @@ import { err } from "@/utils";
 export default {
   name: Events.MessageDelete,
   run: async (message: Message) => {
-    if (message && message.guild && message.author.bot) {
+    if (message && message.guild && message.author?.bot) {
       const isDashboardMessage = await db
         .select()
         .from(messageAndEmbeds)

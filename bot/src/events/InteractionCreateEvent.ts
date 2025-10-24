@@ -15,6 +15,7 @@ import { messages, reactionRole } from "@/db/schema";
 import { db } from "@/db";
 import { and, eq } from "drizzle-orm";
 import { defaultEmbeds, Embed } from "../core/Embed";
+import { env } from "@/env";
 
 export default {
   name: "interactionCreate",
@@ -24,7 +25,7 @@ export default {
     interaction.member = interaction.guild?.members.cache.find(
       (f) => f.id === interaction.user.id
     ) as GuildMember;
-  
+
     if (interaction.isCommand() && interaction.guild) {
       const cmdName = interaction.commandName
         ? interaction.commandName.toLowerCase()
@@ -68,6 +69,13 @@ export default {
         });
       }
 
+      if (command.devOnly && interaction.user.id !== config.ids.dev) {
+        return interaction.reply({
+          flags: ["Ephemeral"],
+          embeds: [defaultEmbeds["dev-only"]()],
+        });
+      }
+
       if (
         command.defaultMemberPermissions &&
         interaction.member.permissions.missing(command.defaultMemberPermissions)
@@ -80,6 +88,7 @@ export default {
         });
       }
 
+      // TODO: Move to count based array on main guild config to prevent mass db size increases
 
       await db.insert(messages).values({
         guildId: interaction.guild.id,

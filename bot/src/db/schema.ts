@@ -36,6 +36,11 @@ export const guildConfig = backendSchema.table("guild_config", {
   ),
   // levelingRoles: text("leveling_roles").array().default([]), // { level: "NUMBER", roleId: "ROLE_ID" }
 
+  // Permissions (array of roleIds)
+  permAdministrators: text("perm_admin").array(),
+  permModerators: text("perm_mod").array(),
+  permHelpers: text("perm_helper").array(),
+  
   //Logging
   logsChannelId: text("logs_channel_id"),
   enabledLogs: text("enabled_loggers")

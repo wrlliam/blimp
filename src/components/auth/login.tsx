@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth/client";
 import { redirect } from "next/navigation";
 import { toast } from "@/components/Toast";
-import ProdAvatarTransparent from "@/assets/AVATAR_PROD-TRANSPARENT.png";
 import { env } from "@/env";
 import Loader from "../loader";
 import { useSpinDelay } from "spin-delay";
@@ -32,7 +31,7 @@ export default function LoginComponent() {
           </h1>
           <Image
             width={60}
-            src={ProdAvatarTransparent}
+            src="AVATAR_PROD-TRANSPARENT.png"
             alt="Transparent variation of Blimp's production logo"
           />
         </div>

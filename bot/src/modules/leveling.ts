@@ -1,5 +1,6 @@
 import config from "@/config";
 import { db } from "@/db";
+import { redis } from "@/db/redis";
 import {
   guildConfig,
   guildLevel,
@@ -16,6 +17,7 @@ import {
   info,
   variableFormat,
 } from "@/utils";
+import { time } from "console";
 import { Guild, GuildMember, Message, MessagePayload } from "discord.js";
 import { and, eq } from "drizzle-orm";
 
@@ -172,7 +174,7 @@ export default class Leveling {
     if (!levels || levels.length === 0) return null;
 
     // Levels are already sorted from getLevels()
-    let closestLevel = levels[0];
+    let closestLevel: null | GuildLevelSelect = null;
 
     for (const level of levels) {
       if ((level.xpRequired as number) <= xp) {
@@ -240,6 +242,22 @@ export default class Leveling {
     const additionalExp = this.generateBaseXp();
     const levels = await this.getLevels(member.guild);
 
+    for (let i = 0; i <= levels.length; i++) {
+      const level = levels[i];
+      if (
+        level &&
+        data.xp < (level.xpRequired as number) &&
+        member.roles.cache.has(level.roleId as string)
+      ) {
+        const role = member.guild.roles.cache.find(
+          (f) => f.id === level.roleId
+        );
+        if (role) {
+          member.roles.remove(role);
+        }
+      }
+    }
+
     const closestLevel = this.getClosestLevel(data.xp, levels);
     if (closestLevel) {
       const convertedLevel = await db
@@ -297,6 +315,43 @@ export default class Leveling {
     }
 
     if (!levels || levels.length === 0) return;
+
+    let lastestCacheStore = await redis.get(
+      `${member.guild.id}-${member.user.id}-leveling`
+    );
+    if (!lastestCacheStore || isNaN(parseInt(lastestCacheStore))) {
+      await redis
+        .set(
+          `${member.guild.id}-${member.user.id}-leveling`,
+          new Date().getTime().toString()
+        )
+        .catch(() =>
+          err(
+            `Failed to store leveling cache ${member.guild.name} (${member.guild.id}) - ${member.user.username} (${member.id})`
+          )
+        );
+    }
+
+    // refresh
+    lastestCacheStore = await redis.get(
+      `${member.guild.id}-${member.user.id}-leveling`
+    );
+
+    const timeDiff =
+      new Date().getTime() - parseInt(lastestCacheStore as string);
+
+    if (timeDiff < config.timeout.leveling) return;
+
+    await redis
+      .set(
+        `${member.guild.id}-${member.user.id}-leveling`,
+        new Date().getTime().toString()
+      )
+      .catch(() =>
+        err(
+          `Failed to store leveling cache ${member.guild.name} (${member.guild.id}) - ${member.user.username} (${member.id}) [POST TIMEOUT]`
+        )
+      );
 
     const updatedXp = data.xp + additionalExp;
 

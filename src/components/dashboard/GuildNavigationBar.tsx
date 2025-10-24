@@ -1,4 +1,3 @@
-import ProductionAvatarTransparent from "@/assets/AVATAR_PROD-TRANSPARENT.png";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -28,26 +27,28 @@ const DROPDOWN_OPTIONS = [
     label: "logout",
     onClick: async () => {
       await authClient.signOut();
-      window.location.href = "/"
+      window.location.href = "/";
     },
     icon: <UserX2Icon className="h-[15px] opacity-20" />,
   },
 ] as DropdownOption[];
 
 export default function GuildNavigationBar({
-  full = false
+  full = false,
 }: {
-  full: boolean
+  full: boolean;
 }) {
   const { user } = useUserStore();
 
   return (
     user && (
-      <div className={`flex flex-row justify-between py-2 px-4 ${full ? "w-screen" : "w-full"} bg-dark-foreground border-b border-blimp-border`}>
+      <div
+        className={`flex flex-row justify-between py-2 px-4 ${full ? "w-screen" : "w-full"} bg-dark-foreground border-b border-blimp-border`}
+      >
         <div className="flex items-center justify-center">
           <Image
             width={50}
-            src={ProductionAvatarTransparent}
+            src="AVATAR_PROD-TRANSPARENT.png"
             alt="Transparent variation of Blimp's production logo"
           />
           <h1 className="font-semibold text-sm">Blimp</h1>
@@ -70,9 +71,7 @@ export default function GuildNavigationBar({
                   key={i}
                   href={o.href ? o.href : undefined}
                   onClick={() => {
-                    if(o.onClick) [
-                        o.onClick()
-                    ]
+                    if (o.onClick) [o.onClick()];
                   }}
                   className="flex cursor-pointer justify-start bg-transparent hover:bg-dark-foreground smooth_transition p-2 items-center gap-2 w-[10vw]"
                 >

@@ -77,7 +77,7 @@ export default function Leveling() {
   );
 }
 
-export function LevelingConfig({ user, guild }: PassedDownProps) {
+function LevelingConfig({ user, guild }: PassedDownProps) {
   const [toggle, setToggle] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -685,11 +685,24 @@ export function LevelingConfig({ user, guild }: PassedDownProps) {
           </div>
         </CardContent>
       </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Multipliers</CardTitle>
+          <CardDescription className="w-[500px]">
+            Leveling multipliers let you fine-tune XP gains. Boost or reduce
+            rewards for specific roles or channels—perfect for balancing
+            activity and keeping things fair.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm opacity-60">Coming soon....</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-export function RoleDisplay({ role }: { role: Role | null }) {
+function RoleDisplay({ role }: { role: Role | null }) {
   return (
     <div
       style={{
@@ -714,7 +727,7 @@ type MixedLevelDataArray = (
   | MixedLevelData
 )[];
 
-export function LevelingLeaderboard({
+function LevelingLeaderboard({
   user,
   guild,
   ...props

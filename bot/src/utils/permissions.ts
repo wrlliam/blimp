@@ -1,5 +1,7 @@
 import config from "@/config";
-import { GuildMember, PermissionsBitField } from "discord.js";
+import { guildConfig } from "@/db/schema";
+import { Guild, GuildMember, PermissionsBitField, User } from "discord.js";
+import { getGuildConfig } from "./misc";
 
 export type Perm = {
   name: string;
@@ -106,3 +108,40 @@ export function findHighestPermission(member: GuildMember): Perm {
 
   return { name: "Regular Member", weight: 0 };
 }
+
+export enum Permission {
+  "ADMIN" = 0,
+  "MOD" = 1,
+  "HELPER" = 2,
+}
+
+export const validatePermission = async (
+  user: User | GuildMember,
+  guild: Guild,
+  minimumExpected: Permission
+): Promise<boolean> => {
+  const guildConfig = await getGuildConfig(guild.id);
+  if (!guildConfig) return false;
+
+  const member =
+    user instanceof GuildMember ? user : await guild.members.fetch(user.id);
+
+  const userRoles = member.roles.cache.map((r) => r.id);
+
+  const adminRoles = guildConfig.permAdministrators ?? [];
+  const modRoles = guildConfig.permModerators ?? [];
+  const helperRoles = guildConfig.permHelpers ?? [];
+
+  let userPermissionLevel = Infinity;
+  if (userRoles.some((id) => adminRoles.includes(id))) {
+    userPermissionLevel = Permission.ADMIN;
+  } else if (userRoles.some((id) => modRoles.includes(id))) {
+    userPermissionLevel = Permission.MOD;
+  } else if (userRoles.some((id) => helperRoles.includes(id))) {
+    userPermissionLevel = Permission.HELPER;
+  } else {
+    return false;
+  }
+
+  return userPermissionLevel <= minimumExpected;
+};

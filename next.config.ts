@@ -2,7 +2,12 @@ import { url } from "inspector";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   devIndicators: false,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   images: {
     remotePatterns: [
       {
@@ -13,7 +18,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
- 
+
   // experimental: {
   //  g``
   // },

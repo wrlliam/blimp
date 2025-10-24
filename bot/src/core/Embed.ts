@@ -15,7 +15,7 @@ export class Embed {
     return new DiscordEmbed({
       color: resolveColor(config.colors.default),
       footer: {
-        text: `blimp • /help`,
+        text: `blimp.digital • /help`,
       },
       ...data,
     });
@@ -34,10 +34,16 @@ export const defaultEmbeds = {
           client.user?.avatarURL({ extension: "png", size: 128 }) || undefined,
       },
     }),
+  "dev-only": () =>
+    new Embed({
+      title: "Insignificant Permissions",
+      color: resolveColor(config.colors.error),
+      description: `${config.emojis.mod} This is a developer only command.`,
+    }),
   "missing-permissions": () =>
     new Embed({
       title: "Insignificant Permissions",
-      color: resolveColor(config.colors.warn),
+      color: resolveColor(config.colors.error),
       description: `${config.emojis.mod} You are missing the required permissions to use this command.`,
     }),
   "unexpected-error": (error?: Error, extended?: string) => {
@@ -47,7 +53,7 @@ export const defaultEmbeds = {
       );
     return new Embed({
       title: "An unexpected error occured.",
-      color: resolveColor(config.colors.warn),
+      color: resolveColor(config.colors.error),
       description: `${config.emojis.cross} An unexpected error occured. Please report this in my [support server](${config.support}) to my team.`,
     });
   },

@@ -1,10 +1,14 @@
 export default {
-  support: "https://discord.gg/6vnBeW7KNH",
+  support: "https://discord.gg/aTkjGak2ZM",
+  ids: {
+    dev: "1283484433390895215",
+  },
   timeout: {
-    customCommands: 60 * 1000 * 2.5 // 2.5 seconds
+    customCommands: 2.5 * 1000, // 2.5 seconds
+    leveling: 6 * 1000, // 6 seconds
   },
   colors: {
-    default: "#6c1228",
+    default: "#fba000",
     error: "#fb2c36",
     success: "#00c951",
     info: "#2b7fff",

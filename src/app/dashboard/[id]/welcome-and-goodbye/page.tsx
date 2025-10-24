@@ -50,7 +50,7 @@ export type GoodbyeWelcData = {
   };
 };
 
-export function Welcome() {
+function Welcome() {
   const [loading, setLoading] = useState(true);
 
   const { guild } = useGuildStore();
@@ -273,7 +273,7 @@ export function Welcome() {
   );
 }
 
-export function Goodbye() {
+function Goodbye() {
   const [loading, setLoading] = useState(true);
 
   const { guild } = useGuildStore();

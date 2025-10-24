@@ -1,13 +1,11 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
 import { useAvailableGuildStore, useUserStore } from "@/lib/stores";
 import { capitlize } from "@/lib/utils";
-import ProdAvatarTransparent from "@/assets/AVATAR_PROD-TRANSPARENT.png";
 import Image from "next/image";
 import { toast } from "@/components/Toast";
 import { GuildAvatar } from "@/components/Avatar";
-import { PersonStanding, User } from "lucide-react";
+import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Guild } from "discord.js";
 import { env } from "@/env";
@@ -23,10 +21,12 @@ export default function DashboardPage() {
       <div className="mx-auto px-[2rem] mt-[5rem] items-center justify-center gap-[3rem] flex flex-col">
         <div className="flex flex-col items-center">
           <Image
-            src={ProdAvatarTransparent}
+            src="AVATAR_PROD-TRANSPARENT.png"
             className="p-0"
             alt="Transparent Variation of Blimp's Production Logo"
             width={100}
+            height={100}
+            unoptimized
           />
           <h1 className="font-bold text-3xl mt-[-1rem]">
             Welcome to Blimp, {capitlize(user?.name as string)}.

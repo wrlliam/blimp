@@ -12,6 +12,8 @@ import { eq } from "drizzle-orm";
 import { err, info } from "../utils/logger";
 import Leveling, { generateBoilerPlateLevels } from "@/modules/leveling";
 import { messagePayloadSchema, variableFormat } from "@/utils";
+import { redis } from "@/db/redis";
+import config from "@/config";
 
 export default {
   name: "messageCreate",
@@ -26,6 +28,15 @@ export default {
           .insert(guildConfig)
           .values({
             id: message.guild.id,
+            permAdministrators: message.guild.roles.cache
+              .filter((f) => f.permissions.has("Administrator"))
+              .map((z) => z.id),
+            permModerators: message.guild.roles.cache
+              .filter((f) => f.permissions.has("BanMembers"))
+              .map((z) => z.id),
+            permHelpers: message.guild.roles.cache
+              .filter((f) => f.permissions.has("ManageMessages"))
+              .map((z) => z.id),
           })
           .execute()
           .then((d) => {
@@ -72,6 +83,44 @@ export default {
           .select()
           .from(customCommand)
           .where(eq(customCommand.commandName, commandName.toLowerCase()));
+
+        let previousCommandTimeout = await redis.get(
+          `${message.guild.id}-${message.author.id}-custom-commands`
+        );
+        if (
+          !previousCommandTimeout ||
+          isNaN(parseInt(previousCommandTimeout))
+        ) {
+          await redis
+            .set(
+              `${message.guild.id}-${message.author.id}-custom-commands`,
+              new Date().getTime().toString()
+            )
+            .catch((err) =>
+              err(
+                `Failed to save custom comman timeout data ${message.guild?.name} (${message.guild?.id}) - ${message.author.username} (${message.author.id})`
+              )
+            );
+        }
+
+        previousCommandTimeout = (await redis.get(
+          `${message.guild.id}-${message.author.id}-custom-commands`
+        )) as string;
+
+        const diff = new Date().getTime() - parseInt(previousCommandTimeout);
+
+        if (diff < config.timeout.customCommands) return;
+
+        await redis
+          .set(
+            `${message.guild.id}-${message.author.id}-custom-commands`,
+            new Date().getTime().toString()
+          )
+          .catch((err) =>
+            err(
+              `Failed to save custom comman timeout data ${message.guild?.name} (${message.guild?.id}) - ${message.author.username} (${message.author.id}) [POST RUN]`
+            )
+          );
 
         if (commandData && commandData[0]) {
           const body = messagePayloadSchema.parse(
