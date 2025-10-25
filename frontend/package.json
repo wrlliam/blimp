@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "db:all": "bunx drizzle-kit generate && bunx drizzle-kit migrate && bunx drizzle-kit push && bunx drizzle-kit pull",
-    "lint": "next lint",
-    "bot": "bun run ./backend/index.ts"
+    "lint": "next lint"
   },
   "overrides": {
     "better-auth": "1.2.7"

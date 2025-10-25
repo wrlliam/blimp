@@ -7,7 +7,6 @@ WORKDIR /app
 # Copy the entire codebase (including root files like drizzle.config.ts)
 COPY . .
 
-# Set working directory to frontend folder
 WORKDIR /app/frontend
 
 # Install frontend dependencies
@@ -48,7 +47,7 @@ WORKDIR /app
 EXPOSE 3000
 
 # Create an entrypoint script that runs db:all before starting the frontend
-RUN echo '#!/bin/sh\nset -e\nbun run db:all || echo "Database migration completed or already exists"\ncd /app/frontend\nexec bun run start' > /entrypoint.sh && \
+RUN echo '#!/bin/sh\ncd /app/frontend\nset -e\nbun run db:all || echo "Database migration completed or already exists"\nexec bun run start' > /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 # Use the entrypoint script
