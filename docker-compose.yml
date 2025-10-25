@@ -1,0 +1,25 @@
+
+services:
+  # Discord Bot
+  bot:
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+    container_name: blimp-bot
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: blimp-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+
+networks:
+  default:
+    name: blimp-network
