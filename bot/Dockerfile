@@ -1,40 +1,35 @@
+# Use official Bun image as base
 FROM oven/bun:1 AS base
 
-# Install dependencies only when needed
-FROM base AS deps
+# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json bun.lock* ./
+# Copy package files from root
+COPY package.json bun.lockb* ./
+
+# Install dependencies
 RUN bun install --frozen-lockfile
 
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# Copy the entire codebase (including root files like drizzle.config.ts)
 COPY . .
 
-# Build the bot (if you have a build step)
-# RUN bun run build
+# Set working directory to bot folder for execution
+WORKDIR /app/bot
 
-# Production image
-FROM base AS runner
+# Install bot-specific dependencies if bot has its own package.json
+RUN if [ -f package.json ]; then bun install --frozen-lockfile; fi
+
+# Go back to root to run database initialization
 WORKDIR /app
 
-ENV NODE_ENV=production
-
-RUN addgroup --system --gid 1001 botgroup
-RUN adduser --system --uid 1001 botuser
-
-# Copy node_modules from deps
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/drizzle.config.ts ./
-
-# Copy source code
-COPY --chown=botuser:botgroup . .
-
-USER botuser
-
+# Run database initialization
 RUN bun run db:all
-# Run the bot
-CMD ["bun", "run", "src/index.ts"]
+
+# Set working directory back to bot for running the application
+WORKDIR /app/bot
+
+# Expose port if needed (adjust as necessary)
+EXPOSE 3000
+
+# Start the bot
+CMD ["bun", "run", "dev"]
