@@ -4,7 +4,7 @@ import { app } from "..";
 import { info } from "../utils/logger";
 
 export default {
-  name: "ready",
+  name: "clientReady",
   run: () => {
     app.user?.setActivity({
       name: "blimp • /help",
