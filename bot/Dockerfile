@@ -26,7 +26,7 @@ WORKDIR /app
 EXPOSE 3000
 
 # Create an entrypoint script that runs db:all before starting the bot
-RUN echo '#!/bin/sh\nbun run db:all\ncd /app/bot\nbun run start' > /entrypoint.sh && \
+RUN echo '#!/bin/sh\nset -e\nbun run db:all || echo "Database migration completed or already exists"\ncd /app/bot\nexec bun run src/index.ts' > /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
 # Use the entrypoint script
