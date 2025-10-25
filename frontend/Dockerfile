@@ -4,20 +4,14 @@ FROM oven/bun:1 AS base
 # Set working directory
 WORKDIR /app
 
-# Copy package files from root
-COPY package.json bun.lockb* ./
-
-# Install dependencies
-RUN bun install --frozen-lockfile
-
 # Copy the entire codebase (including root files like drizzle.config.ts)
 COPY . .
 
 # Set working directory to frontend folder
 WORKDIR /app/frontend
 
-# Install frontend-specific dependencies if frontend has its own package.json
-RUN if [ -f package.json ]; then bun install --frozen-lockfile; fi
+# Install frontend dependencies
+RUN bun install --frozen-lockfile
 
 # Build the Next.js application
 RUN bun run build

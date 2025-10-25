@@ -16,8 +16,8 @@ RUN bun install --frozen-lockfile
 # Go back to root for execution
 WORKDIR /app
 
-# Expose port if needed (adjust as necessary)
-EXPOSE 3000
+# Expose bot API and WebSocket ports
+EXPOSE 3001 3002
 
 # Create an entrypoint script that runs db:all before starting the bot
 RUN echo '#!/bin/sh\nset -e\nbun run db:all || echo "Database migration completed or already exists"\ncd /app/bot\nexec bun run index.ts' > /entrypoint.sh && \
