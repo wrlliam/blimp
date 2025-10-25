@@ -19,17 +19,15 @@ WORKDIR /app/bot
 # Install bot-specific dependencies if bot has its own package.json
 RUN if [ -f package.json ]; then bun install --frozen-lockfile; fi
 
-# Go back to root to run database initialization
+# Go back to root for execution
 WORKDIR /app
-
-# Run database initialization
-RUN bun run db:all
-
-# Set working directory back to bot for running the application
-WORKDIR /app/bot
 
 # Expose port if needed (adjust as necessary)
 EXPOSE 3000
 
-# Start the bot
-CMD ["bun", "run", "dev"]
+# Create an entrypoint script that runs db:all before starting the bot
+RUN echo '#!/bin/sh\nbun run db:all\ncd /app/bot\nbun run start' > /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+# Use the entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]
