@@ -51,7 +51,3 @@ services:
       - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
       - API_PORT=${API_PORT}
       - WS_PORT=${WS_PORT}
-
-networks:
-  default:
-    name: blimp-network
