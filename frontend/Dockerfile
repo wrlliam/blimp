@@ -13,6 +13,20 @@ WORKDIR /app/frontend
 # Install frontend dependencies
 RUN bun install --frozen-lockfile
 
+# Declare build arguments for Next.js public variables
+ARG NEXT_PUBLIC_URL
+ARG NEXT_PUBLIC_WS_URL
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_DISCORD_BOT_INVITE_URL
+ARG NEXT_PUBLIC_STRIPE_PUBLIC_KEY
+
+# Set them as environment variables for the build
+ENV NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
+ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_DISCORD_BOT_INVITE_URL=${NEXT_PUBLIC_DISCORD_BOT_INVITE_URL}
+ENV NEXT_PUBLIC_STRIPE_PUBLIC_KEY=${NEXT_PUBLIC_STRIPE_PUBLIC_KEY}
+
 # Build the Next.js application
 RUN bun run build
 

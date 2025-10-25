@@ -10,22 +10,13 @@ services:
       - "3001:3001"
       - "3002:3002"
     environment:
-      # Database
       - DATABASE_URL=${DATABASE_URL}
-      
-      # Redis
       - REDIS_URL=${REDIS_URL}
-      
-      # Discord Bot
       - TOKEN=${TOKEN}
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
       - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
-      
-      # Ports
       - API_PORT=${API_PORT:-3001}
       - WS_PORT=${WS_PORT:-3002}
-      
-      # Testing
       - GUILD_ID=${GUILD_ID}
 
   # Next.js Frontend
@@ -33,30 +24,32 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      args:
+        - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
+        - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - NEXT_PUBLIC_DISCORD_BOT_INVITE_URL=${NEXT_PUBLIC_DISCORD_BOT_INVITE_URL}
+        - NEXT_PUBLIC_STRIPE_PUBLIC_KEY=${NEXT_PUBLIC_STRIPE_PUBLIC_KEY}
     container_name: blimp-frontend
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      # Database
       - DATABASE_URL=${DATABASE_URL}
-      
-      # Next.js
       - NODE_ENV=${NODE_ENV:-production}
-      
-      # Public URLs
       - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
       - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXT_PUBLIC_DISCORD_BOT_INVITE_URL=${NEXT_PUBLIC_DISCORD_BOT_INVITE_URL}
-      
-      # Better Auth
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL}
-      
-      # Discord OAuth
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
       - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
+      - API_PORT=${API_PORT}
+      - WS_PORT=${WS_PORT}
+      - NEXT_PUBLIC_STRIPE_PUBLIC_KEY=${NEXT_PUBLIC_STRIPE_PUBLIC_KEY}
+      - STRIPE_PRIVATE_KEY=${STRIPE_PRIVATE_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
 
 networks:
   default:
