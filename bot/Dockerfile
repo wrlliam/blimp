@@ -2,8 +2,8 @@ FROM oven/bun:1 AS base
 WORKDIR /app
 
 # Install all dependencies (including dev)
-COPY package.json bun.lockb ./
-RUN bun install --frozen-lockfile
+COPY package.json ./
+RUN bun install
 
 # Copy source code and config (including drizzle.config.ts, etc.)
 COPY . .

@@ -7,7 +7,7 @@ services:
     ports:
       - "3001:3001"
     env_file:
-      - .env # Use shared .env from project root:contentReference[oaicite:12]{index=12}
+      - .env
     command: ["sh", "-c", "bun run db:all || true && bun run dev"]
     restart: unless-stopped
 
@@ -16,8 +16,8 @@ services:
       context: .
       dockerfile: ./frontend/Dockerfile
     ports:
-      - "3004:3000" # Map external 3004 to container 3000
+      - "3004:3000"
     env_file:
-      - .env # Shared environment variables file:contentReference[oaicite:13]{index=13}
+      - .env
     command: ["sh", "-c", "bun run db:all || true && bun run dev"]
     restart: unless-stopped

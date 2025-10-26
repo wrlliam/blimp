@@ -1,8 +1,8 @@
 # Stage 1: install deps
 FROM oven/bun:1 AS deps
 WORKDIR /app
-COPY package.json bun.lockb ./
-RUN bun install --frozen-lockfile
+COPY package.json ./
+RUN bun install 
 
 # Stage 2: build app
 FROM oven/bun:1 AS builder
