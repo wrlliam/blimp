@@ -4,7 +4,7 @@ FROM oven/bun:latest
 WORKDIR /app
 
 # Copy manifest and install (including Next and other dev deps):contentReference[oaicite:8]{index=8}
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 RUN bun install
 
 # Ensure node_modules/.bin is in PATH so binaries like 'next' are found:contentReference[oaicite:9]{index=9}

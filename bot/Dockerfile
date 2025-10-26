@@ -4,7 +4,7 @@ FROM oven/bun:latest
 WORKDIR /app
 
 # Copy manifest files and install all deps (incl. devDependencies):contentReference[oaicite:6]{index=6}
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 RUN bun install
 
 # Copy application source code
