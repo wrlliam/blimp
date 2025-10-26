@@ -1,24 +1,33 @@
-# Use official Bun image as base
+# ---- Base Stage ----
 FROM oven/bun:1 AS base
-
-# Set working directory
 WORKDIR /app
 
-# Copy the entire codebase (including root files like drizzle.config.ts)
-COPY . .
+# ---- Dependencies (with dev) ----
+FROM base AS deps
+COPY package.json bun.lock ./
+RUN bun install
 
-# Set working directory to bot folder
-WORKDIR /app/bot
+# ---- Build (optional) ----
+FROM deps AS builder
+COPY . . 
+# If you have a build step (e.g., TypeScript compile or tests) for the bot, do it here.
+# For example: RUN bun run build (if such a script exists)
+# If no build is needed (Bun can run TS directly), this stage just holds the files.
+# We can still use this stage to copy files from in the final stage.
 
-# Install bot dependencies
-RUN bun install --frozen-lockfile
+# ---- Production Dependencies Only ----
+FROM base AS prod-deps
+COPY package.json bun.lock ./
+RUN bun install --production
 
-# Expose bot API and WebSocket ports
-EXPOSE 3001 3002
+# ---- Final Stage ----
+FROM base AS final
+COPY --from=prod-deps /app/node_modules ./node_modules
+# Copy application code from builder stage.
+COPY --from=builder /app ./
+# (This brings in the bot’s source code. We copy the whole app directory except node_modules.)
+# We deliberately did not copy any .env here; pass env vars in via Docker runtime.
 
-# Create an entrypoint script that runs db:all before starting the bot
-RUN echo '#!/bin/sh\nset -e\ncd /app/bot\nbun run db:all || echo "Database migration completed or already exists"\nexec bun run dev' > /entrypoint.sh && \
-    chmod +x /entrypoint.sh
+EXPOSE 3001
 
-# Use the entrypoint script
-ENTRYPOINT ["/entrypoint.sh"]
+CMD ["sh", "-c", "bun run db:all && bun run dev"]

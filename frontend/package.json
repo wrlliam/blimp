@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "db:all": "bunx drizzle-kit generate && bunx drizzle-kit migrate && bunx drizzle-kit push && bunx drizzle-kit pull",
+    "db:all": "bunx drizzle-kit generate && bunx drizzle-kit migrate || echo 'Migration failed but continuing' && bunx drizzle-kit pull",
     "lint": "next lint"
   },
   "overrides": {

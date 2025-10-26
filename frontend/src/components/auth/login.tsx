@@ -31,7 +31,8 @@ export default function LoginComponent() {
           </h1>
           <Image
             width={60}
-            src="AVATAR_PROD-TRANSPARENT.png"
+            height={60}
+            src="/AVATAR_PROD-TRANSPARENT.png"
             alt="Transparent variation of Blimp's production logo"
           />
         </div>

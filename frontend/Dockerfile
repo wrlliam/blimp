@@ -1,54 +1,42 @@
-# Use official Bun image as base
+# ---- Stage 1: Base ----
 FROM oven/bun:1 AS base
-
-# Set working directory
 WORKDIR /app
 
-# Copy the entire codebase (including root files like drizzle.config.ts)
+# ---- Stage 2: Dependencies (with dev) ----
+FROM base AS deps
+COPY package.json bun.lock ./
+RUN bun install
+
+# ---- Stage 3: Build ----
+FROM deps AS builder
 COPY . .
+RUN --mount=type=secret,id=env,dst=.env bun run build
 
-WORKDIR /app/frontend
+# ---- Stage 4: Production Dependencies Only ----
+FROM base AS prod-deps
+COPY package.json bun.lock ./
+RUN bun install
 
-# Install frontend dependencies
-RUN bun install --frozen-lockfile
-
-# Declare ALL build arguments needed for Next.js build
-ARG DATABASE_URL
-ARG BETTER_AUTH_SECRET
-ARG BETTER_AUTH_URL
-ARG DISCORD_CLIENT_ID
-ARG DISCORD_CLIENT_SECRET
-ARG API_PORT
-ARG WS_PORT
-ARG NEXT_PUBLIC_URL
-ARG NEXT_PUBLIC_WS_URL
-ARG NEXT_PUBLIC_API_URL
-ARG NEXT_PUBLIC_DISCORD_BOT_INVITE_URL
-
-# Set them as environment variables for the build
-ENV DATABASE_URL=${DATABASE_URL}
-ENV BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
-ENV BETTER_AUTH_URL=${BETTER_AUTH_URL}
-ENV DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
-ENV DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
-ENV API_PORT=${API_PORT}
-ENV WS_PORT=${WS_PORT}
-ENV NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
-ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-ENV NEXT_PUBLIC_DISCORD_BOT_INVITE_URL=${NEXT_PUBLIC_DISCORD_BOT_INVITE_URL}
-# Build the Next.js application
-RUN bun run build
-
-# Go back to root for execution
+# ---- Stage 5: Final Image ----
+FROM base AS final
 WORKDIR /app
 
-# Expose Next.js port
+# Copy only what's needed to run the server
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=builder /app/migrations ./migrations
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/next.config.* ./ 
+COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app/drizzle.config.ts ./
+COPY --from=builder /app/src ./src
+
+# Use non-root user for safety
+USER bun
+
+# Expose Next.js default port
 EXPOSE 3000
 
-# Create an entrypoint script that runs db:all before starting the frontend
-RUN echo '#!/bin/sh\ncd /app/frontend\nset -e\nbun run db:all || echo "Database migration completed or already exists"\nexec bun run start' > /entrypoint.sh && \
-    chmod +x /entrypoint.sh
-
-# Use the entrypoint script
-ENTRYPOINT ["/entrypoint.sh"]
+# Run database setup and start app
+CMD ["sh", "-c", "bun run db:all && bun run start"]

@@ -21,7 +21,7 @@ export default function DashboardPage() {
       <div className="mx-auto px-[2rem] mt-[5rem] items-center justify-center gap-[3rem] flex flex-col">
         <div className="flex flex-col items-center">
           <Image
-            src="AVATAR_PROD-TRANSPARENT.png"
+            src="/AVATAR_PROD-TRANSPARENT.png"
             className="p-0"
             alt="Transparent Variation of Blimp's Production Logo"
             width={100}

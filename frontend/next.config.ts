@@ -2,7 +2,7 @@ import { url } from "inspector";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // output: "standalone",
   devIndicators: false,
   eslint: {
     ignoreDuringBuilds: true,
@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
   },
 
   // experimental: {
-  //  g``
+  //   g
   // },
 };
 

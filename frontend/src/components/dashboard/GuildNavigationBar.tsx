@@ -48,7 +48,8 @@ export default function GuildNavigationBar({
         <div className="flex items-center justify-center">
           <Image
             width={50}
-            src="AVATAR_PROD-TRANSPARENT.png"
+            height={50}
+            src="/AVATAR_PROD-TRANSPARENT.png"
             alt="Transparent variation of Blimp's production logo"
           />
           <h1 className="font-semibold text-sm">Blimp</h1>
