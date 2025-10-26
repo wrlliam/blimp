@@ -1,18 +1,19 @@
-# Use the official Bun image as the base (from Oven):contentReference[oaicite:5]{index=5}
-FROM oven/bun:latest
-
+FROM oven/bun:1 AS base
 WORKDIR /app
 
-# Copy manifest files and install all deps (incl. devDependencies):contentReference[oaicite:6]{index=6}
-COPY package.json bun.lock ./
-RUN bun install
+# Install all dependencies (including dev)
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile
 
-# Copy application source code
+# Copy source code and config (including drizzle.config.ts, etc.)
 COPY . .
 
-# Expose the API port
+# (Optionally run any build step here, if applicable)
+# e.g. RUN bun run build
+
+# Expose port for Dokploy routing
 EXPOSE 3001
 
-# On container start, run migrations then start the server.
-# The '|| true' ensures errors in db:all do not stop the app.
-CMD ["sh", "-c", "bun run db:all || true && bun run dev"]
+# Entrypoint: run migrations then start the bot
+# If db:all fails (e.g. tables exist), ignore error and continue.
+ENTRYPOINT ["sh", "-c", "bun run db:all || true && bun run dev"]
