@@ -22,6 +22,7 @@ export default function LoginComponent() {
 
   const showSpinner = useSpinDelay(isPending, { delay: 500, minDuration: 200 });
   if (showSpinner) return <Loader />;
+  
   return (
     <div className="flex items-center justify-center w-screen h-screen">
       <div className="flex items-start flex-col bg-dark-foreground border p-[1rem] rounded-md border-blimp-border w-[500px]">

@@ -1,23 +1,10 @@
 version: "3.8"
 services:
-  bot:
-    build:
-      context: .
-      dockerfile: ./bot/Dockerfile
+  blimp:
+    build: .
     ports:
       - "3001:3001"
-    env_file:
-      - .env
-    command: ["sh", "-c", "bun run db:all || true && bun run dev"]
-    restart: unless-stopped
-
-  frontend:
-    build:
-      context: .
-      dockerfile: ./frontend/Dockerfile
-    ports:
       - "3004:3000"
     env_file:
       - .env
-    command: ["sh", "-c", "bun run db:all || true && bun run dev"]
     restart: unless-stopped
