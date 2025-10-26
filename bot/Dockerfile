@@ -1,17 +1,18 @@
-# Use official Bun image as base
-# (see all versions at https://hub.docker.com/r/oven/bun/tags)
-FROM oven/bun:1
+# Use the official Bun image as the base (from Oven):contentReference[oaicite:5]{index=5}
+FROM oven/bun:latest
+
 WORKDIR /app
 
-# Copy package files and install dependencies (includes devDeps by default)
-COPY package.json bun.lock* ./
+# Copy manifest files and install all deps (incl. devDependencies):contentReference[oaicite:6]{index=6}
+COPY package.json bun.lockb ./
 RUN bun install
 
-# Copy the rest of the bot source code
+# Copy application source code
 COPY . .
 
-# Expose the bot port (3001 as per the app specification)
+# Expose the API port
 EXPOSE 3001
 
-# Start the bot in development mode (e.g. with hot reload)
-CMD ["bun", "run", "dev"]
+# On container start, run migrations then start the server.
+# The '|| true' ensures errors in db:all do not stop the app.
+CMD ["sh", "-c", "bun run db:all || true && bun run dev"]
