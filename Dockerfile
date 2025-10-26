@@ -81,7 +81,7 @@ bot.exited.then((code) => {\n\
 \n\
 // Start frontend\n\
 console.log("🌐 Starting frontend...");\n\
-const frontend = spawn(["bun", "run", "dev"], {\n\
+const frontend = spawn(["bun", "run", "start"], {\n\
   cwd: "/app/frontend",\n\
   stdout: "inherit",\n\
   stderr: "inherit",\n\
