@@ -3,7 +3,7 @@ services:
   bot:
     build:
       context: .
-      dockerfile: Dockerfile.bot
+      dockerfile: ./bot/Dockerfile
     ports:
       - "3001:3001"
     env_file:
@@ -14,7 +14,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.frontend
+      dockerfile: ./frontend/Dockerfile
     ports:
       - "3004:3000" # Map external 3004 to container 3000
     env_file:
