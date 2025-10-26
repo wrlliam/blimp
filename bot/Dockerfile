@@ -1,33 +1,46 @@
-# ---- Base Stage ----
-FROM oven/bun:1 AS base
+# Stage 1: Base (with Bun)
+FROM oven/bun:latest AS base
 WORKDIR /app
 
-# ---- Dependencies (with dev) ----
+# Stage 2: Dependencies install
 FROM base AS deps
-COPY package.json bun.lock ./
-RUN bun install
+WORKDIR /app
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile
 
-# ---- Build (optional) ----
-FROM deps AS builder
-COPY . . 
-# If you have a build step (e.g., TypeScript compile or tests) for the bot, do it here.
-# For example: RUN bun run build (if such a script exists)
-# If no build is needed (Bun can run TS directly), this stage just holds the files.
-# We can still use this stage to copy files from in the final stage.
+# Stage 3: Build (if the bot has any build step, e.g. TypeScript compile)
+# If not (if Bun runs TS directly), we might skip a separate build stage.
+FROM base AS build
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+# Set production environment (if needed for any build optimizations)
+ENV NODE_ENV=production
+# Example: If there's a build script (e.g., tsc or bun build), run it. Otherwise, skip.
+# RUN bun run build 
+# (Assume the bot may not need a build step aside from migrations)
 
-# ---- Production Dependencies Only ----
-FROM base AS prod-deps
-COPY package.json bun.lock ./
-RUN bun install --production
+# Stage 4: Runner
+FROM oven/bun:latest AS runner
+WORKDIR /app
+ENV NODE_ENV=production
 
-# ---- Final Stage ----
-FROM base AS final
-COPY --from=prod-deps /app/node_modules ./node_modules
-# Copy application code from builder stage.
-COPY --from=builder /app ./
-# (This brings in the bot’s source code. We copy the whole app directory except node_modules.)
-# We deliberately did not copy any .env here; pass env vars in via Docker runtime.
+# Copy only necessary files from build stage
+COPY --from=build /app/node_modules ./node_modules
+# if a build produces a dist folder, otherwise copy source
+COPY --from=build /app/dist ./dist
+# example: copy compiled JS files if any
+COPY --from=build /app/*.js ./      
+COPY --from=build /app/.env ./
+COPY --from=build /app/package.json ./
 
+# Switch to non-root user for security
+USER bun  # (The Bun image has a 'bun' user by default) 
+
+# Expose port for API
 EXPOSE 3001
+ENV PORT=3001
+ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "bun run db:all && bun run dev"]
+# Run migrations and then start the bot & API
+CMD bun run db:all && bun run start
