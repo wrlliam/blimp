@@ -186,7 +186,7 @@ export default {
               },
               description:
                 "Leveling lets you earn XP for every message you send, with a random amount added each time. Hit certain levels to unlock rewards and show off your progress. There’s a short 6-second cooldown between messages, so spamming won’t help—just stay active and have fun!",
-            
+            image: 
             }),
           ],
         });
