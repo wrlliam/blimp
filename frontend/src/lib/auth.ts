@@ -123,7 +123,9 @@ export const auth = betterAuth({
     process.env.NEXT_PUBLIC_URL!, // Will use https://blimp.digital
     "http://localhost:3004",
     "http://localhost:3000",
+    "https://blimp.digital",
   ].filter(Boolean),
+  
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: { user, session, account, verification },
