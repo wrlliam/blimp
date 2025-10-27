@@ -49,8 +49,6 @@ export const auth = betterAuth({
       clientSecret: env.DISCORD_CLIENT_SECRET as string,
       //@ts-ignore
       getUserInfo: async (token) => {
-        
-
         const { data: profile, error } = await betterFetch<DiscordProfile>(
           "https://discord.com/api/users/@me",
           {
@@ -121,6 +119,11 @@ export const auth = betterAuth({
   //     maxAge: 5 * 60,
   //   },
   // },
+  trustedOrigins: [
+    process.env.NEXT_PUBLIC_URL!, // Will use https://blimp.digital
+    "http://localhost:3004",
+    "http://localhost:3000",
+  ].filter(Boolean),
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: { user, session, account, verification },
