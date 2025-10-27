@@ -1,7 +1,8 @@
 # Multi-stage Dockerfile for Blimp Discord Bot with Web Dashboard
 # Builds and runs both bot and frontend from parent directory
+# Supports multi-platform builds (arm64 and amd64)
 
-FROM oven/bun:1 AS base
+FROM --platform=$BUILDPLATFORM oven/bun:1 AS base
 WORKDIR /app
 
 # ================================

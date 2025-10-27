@@ -1,6 +1,7 @@
 services:
   blimp:
-    build: 
+    platform: linux/amd64
+    build:
       context: .
       dockerfile: Dockerfile
       args:
@@ -18,9 +19,9 @@ services:
         - WS_PORT=${WS_PORT}
         - REDIS_URL=${REDIS_URL}
     ports:
-      - "3004:3000"  # Frontend
-      - "3001:3001"  # Bot API
-      - "3002:3002"  # WebSocket
+      - "3004:3000" # Frontend
+      - "3001:3001" # Bot API
+      - "3002:3002" # WebSocket
     environment:
       # Runtime environment variables
       NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL}
