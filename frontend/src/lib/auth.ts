@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/lib/db";
 import { account, session, user, verification } from "@/lib/db/schema";
-import { bearer } from "better-auth/plugins";
+import { bearer, oAuthProxy } from "better-auth/plugins";
 import { env } from "@/env";
 import { nextCookies } from "better-auth/next-js";
 import { DiscordProfile } from "./types";
@@ -125,10 +125,10 @@ export const auth = betterAuth({
     "http://localhost:3000",
     "https://blimp.digital",
   ].filter(Boolean),
-  
+
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: { user, session, account, verification },
   }),
-  plugins: [bearer(), nextCookies()],
+  plugins: [bearer(), nextCookies(), oAuthProxy()],
 });
