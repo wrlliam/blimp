@@ -75,7 +75,7 @@ services:
       NEXT_PUBLIC_DISCORD_BOT_INVITE_URL: ${NEXT_PUBLIC_DISCORD_BOT_INVITE_URL}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL}
-      DATABASE_URL: postgresql://postgres:SiKxWFzya1329RfplkZ5BJrGZVLRWx97@postgres:5432/blimp?connection_limit=10
+      DATABASE_URL: postgresql://postgres:SiKxWFzya1329RfplkZ5BJrGZVLRWx97@postgres:5432/blimp
       REDIS_URL: redis://:X0fQ9tJvii98jfErwVAy55SK7cLviM85@redis:6379
       TOKEN: ${TOKEN}
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
