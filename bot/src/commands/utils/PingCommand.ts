@@ -3,7 +3,7 @@ import type { Command } from "../../core/typings";
 
 export default {
   name: "ping",
-  description: "Pong...?",
+  description: "Pong - test connection delay",
   usage: ["/ping"],
   type: ApplicationCommandType.ChatInput,
   run: ({ ctx, client, args }) => {
