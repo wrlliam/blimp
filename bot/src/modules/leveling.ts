@@ -1,6 +1,7 @@
 import config from "@/config";
 import { db } from "@/db";
 import { redis } from "@/db/redis";
+import { createCanvas, loadImage, CanvasRenderingContext2D } from "canvas";
 import {
   guildConfig,
   guildLevel,
@@ -542,3 +543,267 @@ export const generateBoilerPlateLevels = async (guild: Guild) => {
     .catch(() => err(`Failed to boiler plate guilds levels ${guild.id}`))
     .then(() => info(`Boilerplated ${guild.id}'s levels `));
 };
+
+interface XPCardOptions {
+  avatarUrl: string;
+  username: string;
+  currentXP: number;
+  requiredXP: number;
+  level: number;
+}
+
+// Theme colors from your CSS
+const theme = {
+  accent: "#fba000",
+  darkForeground: "oklch(0.2441 0.0313 288.72)",
+  blimpActive: "oklch(0.2041 0.018 288.72)",
+  blimpBorder: "oklch(0.2741 0.025 288.72)",
+  blimpSubtle: "oklch(0.185 0.015 288.72)",
+  blimpForeground: "oklch(0.96 0.005 288.72)",
+  blimpAbstractText: "oklch(0.65 0.05 288.72)",
+};
+
+// Convert oklch to hex for canvas compatibility
+const colors = {
+  accent: "#fba000",
+  background: "#1a1a1f",
+  active: "#151518",
+  border: "#2a2a30",
+  subtle: "#121215",
+  foreground: "#f5f5f5",
+  abstractText: "#9b9ba8",
+};
+
+export async function generateXPCard(options: XPCardOptions): Promise<Buffer> {
+  const { avatarUrl, username, currentXP, requiredXP, level } = options;
+
+  // Canvas dimensions
+  const width = 800;
+  const height = 240;
+
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext("2d");
+
+  // Draw background with rounded corners
+  drawRoundedRect(ctx, 0, 0, width, height, 16, colors.active);
+
+  // Draw subtle border
+  ctx.strokeStyle = colors.border;
+  ctx.lineWidth = 2;
+  drawRoundedRectStroke(ctx, 1, 1, width - 2, height - 2, 16);
+
+  // Load and draw avatar
+  try {
+    const avatar = await loadImage(avatarUrl);
+    const avatarSize = 140;
+    const avatarX = 40;
+    const avatarY = (height - avatarSize) / 2;
+
+    // Draw avatar background circle
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(
+      avatarX + avatarSize / 2,
+      avatarY + avatarSize / 2,
+      avatarSize / 2,
+      0,
+      Math.PI * 2
+    );
+    ctx.closePath();
+    ctx.clip();
+
+    ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
+    ctx.restore();
+
+    // Draw avatar border
+    ctx.strokeStyle = colors.border;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(
+      avatarX + avatarSize / 2,
+      avatarY + avatarSize / 2,
+      avatarSize / 2,
+      0,
+      Math.PI * 2
+    );
+    ctx.stroke();
+  } catch (error) {
+    console.error("Failed to load avatar:", error);
+  }
+
+  // Info section starts after avatar
+  const infoX = 220;
+
+  // Draw username
+  ctx.fillStyle = colors.foreground;
+  ctx.font = "bold 32px sans-serif";
+  ctx.fillText(username, infoX, 80);
+
+  // Draw level badge
+  const levelBadgeX = infoX;
+  const levelBadgeY = 100;
+  const levelBadgeWidth = 100;
+  const levelBadgeHeight = 36;
+
+  drawRoundedRect(
+    ctx,
+    levelBadgeX,
+    levelBadgeY,
+    levelBadgeWidth,
+    levelBadgeHeight,
+    8,
+    colors.subtle
+  );
+
+  ctx.fillStyle = colors.accent;
+  ctx.font = "bold 18px sans-serif";
+  const levelText = `LEVEL ${level}`;
+  const levelTextWidth = ctx.measureText(levelText).width;
+  ctx.fillText(
+    levelText,
+    levelBadgeX + (levelBadgeWidth - levelTextWidth) / 2,
+    levelBadgeY + 24
+  );
+
+  // Draw XP text
+  ctx.fillStyle = colors.abstractText;
+  ctx.font = "16px sans-serif";
+  const xpText = `${currentXP.toLocaleString()} / ${requiredXP.toLocaleString()} XP`;
+  ctx.fillText(xpText, levelBadgeX + levelBadgeWidth + 20, levelBadgeY + 22);
+
+  // Progress bar
+  const progressX = infoX;
+  const progressY = 160;
+  const progressWidth = width - infoX - 40;
+  const progressHeight = 32;
+  const progress = Math.min(currentXP / requiredXP, 1);
+
+  // Background bar
+  drawRoundedRect(
+    ctx,
+    progressX,
+    progressY,
+    progressWidth,
+    progressHeight,
+    16,
+    colors.subtle
+  );
+
+  // Progress fill with gradient
+  if (progress > 0) {
+    const gradient = ctx.createLinearGradient(
+      progressX,
+      0,
+      progressX + progressWidth * progress,
+      0
+    );
+    gradient.addColorStop(0, colors.accent);
+    gradient.addColorStop(1, "#ff8800");
+
+    ctx.save();
+    ctx.beginPath();
+    roundedRectPath(
+      ctx,
+      progressX,
+      progressY,
+      progressWidth * progress,
+      progressHeight,
+      16
+    );
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle = gradient;
+    ctx.fillRect(
+      progressX,
+      progressY,
+      progressWidth * progress,
+      progressHeight
+    );
+    ctx.restore();
+  }
+
+  // Progress bar border
+  ctx.strokeStyle = colors.border;
+  ctx.lineWidth = 2;
+  drawRoundedRectStroke(
+    ctx,
+    progressX,
+    progressY,
+    progressWidth,
+    progressHeight,
+    16
+  );
+
+  // Progress percentage text
+  ctx.fillStyle = colors.foreground;
+  ctx.font = "bold 16px sans-serif";
+  const percentText = `${Math.floor(progress * 100)}%`;
+  const percentWidth = ctx.measureText(percentText).width;
+  ctx.fillText(
+    percentText,
+    progressX + (progressWidth - percentWidth) / 2,
+    progressY + 21
+  );
+
+  return canvas.toBuffer("image/png");
+}
+
+export function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+  fillStyle: string
+) {
+  ctx.fillStyle = fillStyle;
+  ctx.beginPath();
+  roundedRectPath(ctx, x, y, width, height, radius);
+  ctx.fill();
+}
+
+export function drawRoundedRectStroke(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  ctx.beginPath();
+  roundedRectPath(ctx, x, y, width, height, radius);
+  ctx.stroke();
+}
+
+export function roundedRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+}
+
+// Example usage:
+// const cardBuffer = await generateXPCard({
+//   avatarUrl: 'https://cdn.discordapp.com/avatars/123/abc.png',
+//   username: 'CoolUser',
+//   currentXP: 2500,
+//   requiredXP: 5000,
+//   level: 12,
+// });
+//
+// // In a Discord.js bot:
+// const attachment = new AttachmentBuilder(cardBuffer, { name: 'xp-card.png' });
+// await interaction.reply({ files: [attachment] });
