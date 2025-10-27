@@ -27,9 +27,9 @@ services:
   redis:
     image: redis:7-alpine
     container_name: blimp-redis
-    command: redis-server --requirepass X0fQ9tJvii98jfErwVAy55SK7cLviM85 --maxmemory 256mb --maxmemory-policy allkeys-lru
+    command: redis-server --requirepass X0fQ9tJvii98jfErwVAy55SK7cLviM85
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -76,7 +76,7 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL}
       DATABASE_URL: postgresql://postgres:SiKxWFzya1329RfplkZ5BJrGZVLRWx97@postgres:5432/blimp
-      REDIS_URL: redis://:X0fQ9tJvii98jfErwVAy55SK7cLviM85@redis:6379
+      REDIS_URL: redis://:X0fQ9tJvii98jfErwVAy55SK7cLviM85@redis:6380
       TOKEN: ${TOKEN}
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
