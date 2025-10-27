@@ -1,4 +1,37 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: blimp-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: SiKxWFzya1329RfplkZ5BJrGZVLRWx97
+      POSTGRES_DB: blimp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: blimp-redis
+    command: redis-server --requirepass X0fQ9tJvii98jfErwVAy55SK7cLviM85
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   blimp:
     platform: linux/amd64
     build:
@@ -12,12 +45,12 @@ services:
         - NEXT_PUBLIC_DISCORD_BOT_INVITE_URL=${NEXT_PUBLIC_DISCORD_BOT_INVITE_URL}
         - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
         - BETTER_AUTH_URL=${BETTER_AUTH_URL}
-        - DATABASE_URL=${DATABASE_URL}
+        - DATABASE_URL=postgresql://postgres:SiKxWFzya1329RfplkZ5BJrGZVLRWx97@postgres:5432/blimp
         - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
         - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
         - API_PORT=${API_PORT}
         - WS_PORT=${WS_PORT}
-        - REDIS_URL=${REDIS_URL}
+        - REDIS_URL=redis://:X0fQ9tJvii98jfErwVAy55SK7cLviM85@redis:6379
     ports:
       - "3004:3000" # Frontend
       - "3001:3001" # Bot API
@@ -30,8 +63,8 @@ services:
       NEXT_PUBLIC_DISCORD_BOT_INVITE_URL: ${NEXT_PUBLIC_DISCORD_BOT_INVITE_URL}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL}
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
+      DATABASE_URL: postgresql://postgres:SiKxWFzya1329RfplkZ5BJrGZVLRWx97@postgres:5432/blimp
+      REDIS_URL: redis://:X0fQ9tJvii98jfErwVAy55SK7cLviM85@redis:6379
       TOKEN: ${TOKEN}
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
@@ -40,4 +73,13 @@ services:
       GUILD_ID: ${GUILD_ID}
       OWNER_ID: ${OWNER_ID}
       NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
