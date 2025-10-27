@@ -1,6 +1,7 @@
 import {
   Attachment,
   Guild,
+  GuildMember,
   InteractionReplyOptions,
   InteractionResponse,
   Message,
@@ -10,6 +11,7 @@ import {
   TextChannel,
   User,
 } from "discord.js";
+import ms from "ms";
 import {
   MessageResponse,
   Module,
@@ -35,6 +37,10 @@ export default class Moderation {
 
   public async ban(guild: Guild) {
     return new BanSystem(guild);
+  }
+
+  public async mute(guild: Guild) {
+    return new MuteSystem(guild);
   }
 }
 
@@ -326,4 +332,145 @@ export async function fetchMessages(
     }
   }
   return historyMessages;
+}
+
+export type MuteSystemLogic = {
+  user: User;
+  reason: string;
+  silent: boolean | null;
+  proof: Attachment | null;
+  time: string;
+  ctx: ExtendedInteraction;
+  client: CoreBot;
+  history: number | null;
+};
+
+export class MuteSystem extends Module {
+  guild: Guild;
+  constructor(guild: Guild) {
+    super();
+    this.guild = guild;
+  }
+
+  public async logic({
+    ...data
+  }: MuteSystemLogic): Promise<InteractionReplyOptions | MessagePayload> {
+    const uId = createId(35);
+    const silenced = typeof data.silent !== "boolean" ? true : false;
+    const time = ms(data.time);
+    const maxmimumLength = 60 * 1000 * 60 * 24 * 14;
+
+    if (time > maxmimumLength)
+      return {
+        flags: ["Ephemeral"],
+        embeds: [defaultEmbeds["unexpected-error"]()],
+      };
+
+    const member = this.guild.members.cache.find(
+      (f) => f.id === data.user.id
+    ) as GuildMember;
+
+    if (member.isCommunicationDisabled()) {
+      member.timeout(null, "Unmuted for remute.");
+    }
+    return member
+      .timeout(time, data.reason)
+      .then(async () => {
+        return (await db
+          .insert(infraction)
+          .values({
+            type: "mute",
+            guildId: data.ctx.guild?.id as string,
+            reason: data.reason,
+            moderatorId: data.ctx.user.id,
+            userId: data.user.id,
+            id: uId,
+            length: time.toString(),
+            silenced,
+            proofUrl: data.proof?.url || null,
+          })
+          .execute()
+          .then(() => {
+            return {
+              flags: silenced ? ["Ephemeral"] : [],
+              embeds: [
+                new Embed({
+                  color: resolveColor(config.colors.success),
+                  description: `${config.emojis.tick} Muted: <@${
+                    data.user.id
+                  }> *(@${data.user.username})*\n${
+                    config.emojis.mod
+                  } Moderator: <@${data.ctx.user.id}>\n${
+                    config.emojis.mod
+                  } Time: ${ms(time)}`,
+                  fields: [
+                    {
+                      name: "Options",
+                      value: `>>> ${moduleValid(
+                        silenced,
+                        "Silenced?"
+                      )}\n ${moduleValid(
+                        data.history,
+                        "History Saved?"
+                      )}\n ${moduleValid(data.proof, "Proof Attached?")}`,
+                    },
+                    {
+                      name: "Reason",
+                      value: `*${data.reason}*`,
+                    },
+                  ],
+                  footer: {
+                    text: `Case ID: #${uId}`,
+                  },
+                }),
+              ],
+            } as MessageResponse;
+          })
+          .catch(() => {
+            return {
+              flags: ["Ephemeral"],
+              embeds: [
+                new Embed({
+                  color: resolveColor(config.colors.error),
+                  description: `${config.emojis.cross} Failed to mute <@${data.user.id}>.`,
+                }),
+              ],
+            } as MessageResponse;
+          })) as MessageResponse;
+      })
+      .catch((error) => {
+        err(`${error}`);
+        return {
+          flags: ["Ephemeral"],
+          embeds: [
+            new Embed({
+              color: resolveColor(config.colors.error),
+              description: `${config.emojis.cross} Failed to mute <@${data.user.id}>.`,
+            }),
+          ],
+        } as MessageResponse;
+      });
+  }
+
+  public valid(cases: ModuleBooleanFn[]): ModuleValidation {
+    let v = false;
+
+    for (let i = 0; i < cases.length; i++) {
+      const c = cases[i];
+      if (!c()) {
+        v = false;
+        break;
+      } else {
+        v = true;
+      }
+    }
+
+    return (cmd: Command, client: CoreBot) => ({
+      value: v,
+      response: {
+        flags: ["Ephemeral"],
+        embeds: [defaultEmbeds["missing-values"](cmd, client)],
+      },
+    });
+  }
 }

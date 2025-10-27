@@ -3,20 +3,24 @@ import {
   ApplicationCommandType,
   Guild,
 } from "discord.js";
-import type { Command } from "@/core/typings";
-import { getCommand } from "@/utils/misc";
+import type { Command } from "../../../core/typings";
+import { getCommand } from "@/utils";
 
 export default {
-  name: "ban",
-  description: "Ban a member.",
-  usage: ["/ban [user] [reason]"],
-  type: ApplicationCommandType.ChatInput,
-  defaultMemberPermissions: ["BanMembers"],
+  name: "mute",
+  description: "Mute a member [for a specific amount of time.]",
+  usage: ["/mute {user} {time}"],
   options: [
     {
       name: "target",
       type: ApplicationCommandOptionType.User,
       description: "the user to warn",
+      required: true,
+    },
+    {
+      name: "time",
+      type: ApplicationCommandOptionType.String,
+      description: "The amount of time for a mute, maximum 14 days. (E.G 14d, 3m, 10 seconds)",
       required: true,
     },
     {
@@ -50,19 +54,24 @@ export default {
       required: false,
     },
   ],
+  type: ApplicationCommandType.ChatInput,
   run: async ({ ctx, client, args }) => {
     const user = args.getUser("target", true);
     const reason = args.getString("reason", true);
     const silent = args.getBoolean("silent");
     const proof = args.getAttachment("proof");
+    const time = args.getString("time", true);
     const history = args.getNumber("history");
     const remove = args.getBoolean("remove");
 
-    const sys = await client.moderation.ban(ctx.guild as Guild);
+    const sys = await client.moderation.mute(ctx.guild as Guild);
     const valid = sys.valid([
       () => user !== undefined,
       () => typeof reason === "string" && reason.length > 0 && reason !== "",
-      () => !ctx.guild?.members.cache.find(f => f.id === user.id)?.permissions.has("ManageGuild") || true
+      () =>
+        !ctx.guild?.members.cache
+          .find((f) => f.id === user.id)
+          ?.permissions.has("ManageGuild") || true,
     ])(getCommand(ctx.commandName), client);
 
     if (!valid.value) return ctx.reply(valid.response);
@@ -72,6 +81,7 @@ export default {
         user,
         reason,
         silent,
+        time,
         proof,
         history,
         client,

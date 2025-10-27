@@ -22,7 +22,7 @@ services:
     container_name: blimp-redis
     command: redis-server --requirepass X0fQ9tJvii98jfErwVAy55SK7cLviM85
     ports:
-      - "6380:6379"
+      - "6379:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped

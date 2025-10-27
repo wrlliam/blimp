@@ -1,10 +1,17 @@
 import {
+  APIEmbed,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   Guild,
 } from "discord.js";
 import type { Command } from "@/core/typings";
-import { getCommand } from "@/utils/misc";
+import { getCommand, limitSentence, paginate } from "@/utils/misc";
+import { db } from "@/db";
+import { infraction } from "@/db/schema";
+import { and, eq } from "drizzle-orm";
+import { warn } from "console";
+import { Embed } from "@/core/Embed";
+import config from "@/config";
 
 export default {
   name: "warn",
@@ -55,6 +62,19 @@ export default {
       description: "If true, the message will be removed.",
       required: false,
     },
+    // {
+    //   name: "list",
+    //   type: ApplicationCommandOptionType.Subcommand,
+    //   description: "List all warnings for a user",
+    //   options: [
+    //     {
+    //       name: "target",
+    //       description: "The target of the command",
+    //       type: ApplicationCommandOptionType.User,
+    //       required: true,
+    //     },
+    //   ],
+    // },
   ],
   run: async ({ ctx, client, args }) => {
     const user = args.getUser("target", true);

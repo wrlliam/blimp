@@ -76,6 +76,7 @@ export const infraction = backendSchema.table("infraction", {
   silenced: boolean("silenced").default(false),
   permanent: boolean("permanent").default(false),
   reason: text("reason").notNull(),
+  length: text("length"),
   proofUrl: text("proof_url"),
   moderatorId: text("moderator_id").notNull(),
   type: text("infraction_type").notNull(),

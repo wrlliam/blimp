@@ -91,7 +91,7 @@ export default class CoreBot extends Client {
     if (!env.GUILD_ID) {
       info(`Registering commands globally.}`);
       rest
-        .put(Routes.applicationCommands(this.opts.clientId!), {
+        .put(Routes.applicationCommands(env.DISCORD_CLIENT_ID!), {
           body: commandList,
         })
         .then((data) => {
@@ -101,7 +101,8 @@ export default class CoreBot extends Client {
             } commands globally.`
           );
         })
-        .catch(() => {
+        .catch((e) => {
+          console.log(e);
           err(`Failed to register commands globally.`, 0);
         });
     } else {

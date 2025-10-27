@@ -1,7 +1,13 @@
 import config from "@/config";
 import { db } from "@/db";
 import { redis } from "@/db/redis";
-import { createCanvas, loadImage, CanvasRenderingContext2D } from "canvas";
+import {
+  CanvasGradient,
+  createCanvas,
+  loadImage,
+  SKRSContext2D,
+} from "@napi-rs/canvas";
+
 import {
   guildConfig,
   guildLevel,
@@ -174,7 +180,6 @@ export default class Leveling {
   ): GuildLevelSelect | null {
     if (!levels || levels.length === 0) return null;
 
-    // Levels are already sorted from getLevels()
     let closestLevel: null | GuildLevelSelect = null;
 
     for (const level of levels) {
@@ -475,13 +480,6 @@ export const generateBoilerPlateLevels = async (guild: Guild) => {
     {
       guildId: guild.id,
       id: createId(),
-      level: 0,
-      xpRequired: 0,
-      roleId: null,
-    },
-    {
-      guildId: guild.id,
-      id: createId(),
       level: 1,
       xpRequired: 500,
       roleId: null,
@@ -550,56 +548,55 @@ interface XPCardOptions {
   currentXP: number;
   requiredXP: number;
   level: number;
+  rank?: number; // Optional: user's rank/position
+  totalUsers?: number; // Optional: total users for context
 }
 
-// Theme colors from your CSS
-const theme = {
-  accent: "#fba000",
-  darkForeground: "oklch(0.2441 0.0313 288.72)",
-  blimpActive: "oklch(0.2041 0.018 288.72)",
-  blimpBorder: "oklch(0.2741 0.025 288.72)",
-  blimpSubtle: "oklch(0.185 0.015 288.72)",
-  blimpForeground: "oklch(0.96 0.005 288.72)",
-  blimpAbstractText: "oklch(0.65 0.05 288.72)",
-};
-
-// Convert oklch to hex for canvas compatibility
+// Theme colors
 const colors = {
   accent: "#fba000",
+  accentGlow: "#ff8800",
   background: "#1a1a1f",
   active: "#151518",
   border: "#2a2a30",
   subtle: "#121215",
   foreground: "#f5f5f5",
   abstractText: "#9b9ba8",
+  dimText: "#6b6b78",
 };
 
 export async function generateXPCard(options: XPCardOptions): Promise<Buffer> {
-  const { avatarUrl, username, currentXP, requiredXP, level } = options;
+  const {
+    avatarUrl,
+    username,
+    currentXP,
+    requiredXP,
+    level,
+    rank,
+    totalUsers,
+  } = options;
 
   // Canvas dimensions
-  const width = 800;
-  const height = 240;
+  const width = 934;
+  const height = 280;
 
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
 
-  // Draw background with rounded corners
-  drawRoundedRect(ctx, 0, 0, width, height, 16, colors.active);
-
-  // Draw subtle border
-  ctx.strokeStyle = colors.border;
-  ctx.lineWidth = 2;
-  drawRoundedRectStroke(ctx, 1, 1, width - 2, height - 2, 16);
+  // Draw background with rounded corners and subtle gradient
+  const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
+  bgGradient.addColorStop(0, colors.active);
+  bgGradient.addColorStop(1, colors.subtle);
+  drawRoundedRect(ctx, 0, 0, width, height, 20, bgGradient);
 
   // Load and draw avatar
   try {
     const avatar = await loadImage(avatarUrl);
-    const avatarSize = 140;
-    const avatarX = 40;
+    const avatarSize = 160;
+    const avatarX = 50;
     const avatarY = (height - avatarSize) / 2;
 
-    // Draw avatar background circle
+    // Draw avatar
     ctx.save();
     ctx.beginPath();
     ctx.arc(
@@ -611,13 +608,12 @@ export async function generateXPCard(options: XPCardOptions): Promise<Buffer> {
     );
     ctx.closePath();
     ctx.clip();
-
     ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
     ctx.restore();
 
-    // Draw avatar border
-    ctx.strokeStyle = colors.border;
-    ctx.lineWidth = 3;
+    // Draw accent border around avatar
+    ctx.strokeStyle = colors.accent;
+    ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.arc(
       avatarX + avatarSize / 2,
@@ -631,131 +627,172 @@ export async function generateXPCard(options: XPCardOptions): Promise<Buffer> {
     console.error("Failed to load avatar:", error);
   }
 
-  // Info section starts after avatar
-  const infoX = 220;
+  // Info section starts after avatar (centered vertically)
+  const infoX = 250;
+  const topY = 85;
 
-  // Draw username
+  // Draw username (smaller, cleaner)
   ctx.fillStyle = colors.foreground;
-  ctx.font = "bold 32px sans-serif";
-  ctx.fillText(username, infoX, 80);
+  ctx.font = 'bold 38px "Segoe UI", sans-serif';
+  ctx.fillText(username, infoX, topY);
 
-  // Draw level badge
+  // Get username width for positioning
+  const usernameWidth = ctx.measureText(username).width;
+
+  // Draw rank badge next to username (if provided)
+  if (rank && totalUsers) {
+    const rankX = infoX + usernameWidth + 20;
+    const rankY = topY - 28;
+    const rankBadgeWidth = 90;
+    const rankBadgeHeight = 32;
+
+    drawRoundedRect(
+      ctx,
+      rankX,
+      rankY,
+      rankBadgeWidth,
+      rankBadgeHeight,
+      8,
+      colors.subtle
+    );
+
+    ctx.fillStyle = colors.abstractText;
+    ctx.font = "600 15px sans-serif";
+    const rankText = `#${rank}`;
+    const rankTextWidth = ctx.measureText(rankText).width;
+    ctx.fillText(
+      rankText,
+      rankX + (rankBadgeWidth - rankTextWidth) / 2,
+      rankY + 21
+    );
+  }
+
+  // Draw level and XP info on same line
+  const statsY = topY + 35;
+
+  // Level badge (smaller, more refined)
   const levelBadgeX = infoX;
-  const levelBadgeY = 100;
-  const levelBadgeWidth = 100;
-  const levelBadgeHeight = 36;
-
-  drawRoundedRect(
-    ctx,
-    levelBadgeX,
-    levelBadgeY,
-    levelBadgeWidth,
-    levelBadgeHeight,
-    8,
-    colors.subtle
-  );
+  const levelBadgeY = statsY;
 
   ctx.fillStyle = colors.accent;
-  ctx.font = "bold 18px sans-serif";
-  const levelText = `LEVEL ${level}`;
-  const levelTextWidth = ctx.measureText(levelText).width;
-  ctx.fillText(
-    levelText,
-    levelBadgeX + (levelBadgeWidth - levelTextWidth) / 2,
-    levelBadgeY + 24
-  );
+  ctx.font = "600 20px sans-serif";
+  const levelText = `Level ${level}`;
+  ctx.fillText(levelText, levelBadgeX, levelBadgeY);
 
-  // Draw XP text
+  const levelWidth = ctx.measureText(levelText).width;
+
+  // XP text with subtle separator
+  ctx.fillStyle = colors.dimText;
+  ctx.font = "400 18px sans-serif";
+  const separator = "  •  ";
+  ctx.fillText(separator, levelBadgeX + levelWidth, levelBadgeY);
+
+  const sepWidth = ctx.measureText(separator).width;
+
   ctx.fillStyle = colors.abstractText;
-  ctx.font = "16px sans-serif";
   const xpText = `${currentXP.toLocaleString()} / ${requiredXP.toLocaleString()} XP`;
-  ctx.fillText(xpText, levelBadgeX + levelBadgeWidth + 20, levelBadgeY + 22);
+  ctx.fillText(xpText, levelBadgeX + levelWidth + sepWidth, levelBadgeY);
 
-  // Progress bar
+  // Progress bar (more refined design)
   const progressX = infoX;
-  const progressY = 160;
-  const progressWidth = width - infoX - 40;
-  const progressHeight = 32;
+  const progressY = statsY + 40;
+  const progressWidth = width - infoX - 50;
+  const progressHeight = 28;
   const progress = Math.min(currentXP / requiredXP, 1);
 
-  // Background bar
+  // Background bar with inner shadow effect
   drawRoundedRect(
     ctx,
     progressX,
     progressY,
     progressWidth,
     progressHeight,
-    16,
+    14,
     colors.subtle
   );
 
-  // Progress fill with gradient
+  // Add inner border for depth
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.3)";
+  ctx.lineWidth = 1;
+  drawRoundedRectStroke(
+    ctx,
+    progressX + 1,
+    progressY + 1,
+    progressWidth - 2,
+    progressHeight - 2,
+    13
+  );
+
+  // Progress fill with enhanced gradient
   if (progress > 0) {
+    const fillWidth = Math.max(progressWidth * progress, 28); // Minimum width for rounded corners
+
     const gradient = ctx.createLinearGradient(
       progressX,
       0,
-      progressX + progressWidth * progress,
+      progressX + fillWidth,
       0
     );
     gradient.addColorStop(0, colors.accent);
-    gradient.addColorStop(1, "#ff8800");
+    gradient.addColorStop(0.5, colors.accentGlow);
+    gradient.addColorStop(1, colors.accent);
 
     ctx.save();
     ctx.beginPath();
-    roundedRectPath(
-      ctx,
-      progressX,
-      progressY,
-      progressWidth * progress,
-      progressHeight,
-      16
-    );
+    roundedRectPath(ctx, progressX, progressY, fillWidth, progressHeight, 14);
     ctx.closePath();
     ctx.clip();
     ctx.fillStyle = gradient;
-    ctx.fillRect(
-      progressX,
+    ctx.fillRect(progressX, progressY, fillWidth, progressHeight);
+
+    // Add subtle shine effect
+    const shineGradient = ctx.createLinearGradient(
+      0,
       progressY,
-      progressWidth * progress,
-      progressHeight
+      0,
+      progressY + progressHeight
     );
+    shineGradient.addColorStop(0, "rgba(255, 255, 255, 0.2)");
+    shineGradient.addColorStop(0.5, "rgba(255, 255, 255, 0)");
+    shineGradient.addColorStop(1, "rgba(0, 0, 0, 0.1)");
+    ctx.fillStyle = shineGradient;
+    ctx.fillRect(progressX, progressY, fillWidth, progressHeight);
+
     ctx.restore();
   }
 
-  // Progress bar border
-  ctx.strokeStyle = colors.border;
-  ctx.lineWidth = 2;
-  drawRoundedRectStroke(
-    ctx,
-    progressX,
-    progressY,
-    progressWidth,
-    progressHeight,
-    16
-  );
-
-  // Progress percentage text
+  // Progress percentage text (positioned better)
   ctx.fillStyle = colors.foreground;
-  ctx.font = "bold 16px sans-serif";
+  ctx.font = "600 15px sans-serif";
   const percentText = `${Math.floor(progress * 100)}%`;
   const percentWidth = ctx.measureText(percentText).width;
-  ctx.fillText(
-    percentText,
-    progressX + (progressWidth - percentWidth) / 2,
-    progressY + 21
-  );
+  const percentX =
+    progress > 0.15
+      ? progressX + progressWidth * progress - percentWidth - 12
+      : progressX + progressWidth - percentWidth - 12;
+  ctx.fillText(percentText, percentX, progressY + 19);
+
+  // XP needed text below progress bar
+  const xpNeeded = requiredXP - currentXP;
+  if (xpNeeded > 0) {
+    ctx.fillStyle = colors.dimText;
+    ctx.font = "400 14px sans-serif";
+    const neededText = `${xpNeeded.toLocaleString()} XP to next level`;
+    ctx.fillText(neededText, progressX, progressY + progressHeight + 22);
+  }
 
   return canvas.toBuffer("image/png");
 }
 
-export function drawRoundedRect(
-  ctx: CanvasRenderingContext2D,
+// Helper functions for rounded rectangles
+function drawRoundedRect(
+  ctx: SKRSContext2D,
   x: number,
   y: number,
   width: number,
   height: number,
   radius: number,
-  fillStyle: string
+  fillStyle: string | CanvasGradient
 ) {
   ctx.fillStyle = fillStyle;
   ctx.beginPath();
@@ -763,8 +800,8 @@ export function drawRoundedRect(
   ctx.fill();
 }
 
-export function drawRoundedRectStroke(
-  ctx: CanvasRenderingContext2D,
+function drawRoundedRectStroke(
+  ctx: SKRSContext2D,
   x: number,
   y: number,
   width: number,
@@ -776,8 +813,8 @@ export function drawRoundedRectStroke(
   ctx.stroke();
 }
 
-export function roundedRectPath(
-  ctx: CanvasRenderingContext2D,
+function roundedRectPath(
+  ctx: SKRSContext2D,
   x: number,
   y: number,
   width: number,
@@ -797,13 +834,49 @@ export function roundedRectPath(
 
 // Example usage:
 // const cardBuffer = await generateXPCard({
-//   avatarUrl: 'https://cdn.discordapp.com/avatars/123/abc.png',
-//   username: 'CoolUser',
-//   currentXP: 2500,
-//   requiredXP: 5000,
-//   level: 12,
+//   avatarUrl: user.displayAvatarURL({ extension: 'png', size: 256 }),
+//   username: user.username,
+//   currentXP: 13,
+//   requiredXP: 500,
+//   level: 0,
+//   rank: 42, // Optional
+//   totalUsers: 1523, // Optional
 // });
 //
 // // In a Discord.js bot:
 // const attachment = new AttachmentBuilder(cardBuffer, { name: 'xp-card.png' });
 // await interaction.reply({ files: [attachment] });
+
+export async function findNextLevel(
+  levelId: string,
+  guildId: string
+): Promise<[GuildLevelSelect, GuildLevelSelect] | null> {
+  const current = await db
+    .select()
+    .from(guildLevel)
+    .where(and(eq(guildLevel.guildId, guildId), eq(guildLevel.id, levelId)));
+  console.log(current, guildId, levelId);
+  if (!current || !current[0]) return null;
+
+  const levels = await db
+    .select()
+    .from(guildLevel)
+    .where(eq(guildLevel.guildId, guildId));
+
+  const sortedLevels =
+    levels && levels.length > 0
+      ? levels.sort(
+          (a, b) => (a.xpRequired as number) - (b.xpRequired as number)
+        )
+      : [];
+
+  const currentIndex = sortedLevels.indexOf(
+    sortedLevels.find((f) => f.id === current[0].id) as GuildLevelSelect
+  );
+  const nextLevel =
+    currentIndex === sortedLevels.length
+      ? sortedLevels[currentIndex]
+      : sortedLevels[currentIndex + 1];
+
+  return [current[0] as unknown as GuildLevelSelect, nextLevel];
+}

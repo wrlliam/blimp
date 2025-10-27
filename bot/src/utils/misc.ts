@@ -1,3 +1,4 @@
+import { defaultEmbeds, Embed } from "@/core/Embed";
 import { app } from "..";
 import { db } from "@/db";
 import {
@@ -8,14 +9,26 @@ import {
   LevelingSelect,
 } from "@/db/schema";
 import {
+  ActionRowBuilder,
   APIEmbed,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  ChatInputCommandInteraction,
+  ComponentType,
+  EmbedBuilder,
   Guild,
   GuildMember,
+  InteractionResponse,
+  Message,
   PermissionsBitField,
   Sticker,
 } from "discord.js";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { ExtendedInteraction } from "@/core/typings";
+import config from "@/config";
+import { err } from "./logger";
 
 export function createId(length: number = 35) {
   let str = "QWERTYUIOASDFGHJKLZXCVBNMqwertyuioasdfghjklzxcvbnm1234567890---";
@@ -298,3 +311,117 @@ export const formatVariableBody = async (
   }
   return body;
 };
+
+interface PaginationOptions {
+  embeds: Embed[];
+  time?: number; // Collector timeout in milliseconds (default: 60000)
+}
+
+/**
+ * Creates an interactive paginated embed message with navigation buttons
+ * @param interaction - The command interaction to reply to
+ * @param options - Pagination options including embeds array and timeout
+ * @returns Promise that resolves when pagination is complete
+ */
+export async function paginate(
+  interaction: ExtendedInteraction,
+  options: PaginationOptions
+): Promise<void> {
+  const { embeds, time = 60000 } = options;
+
+  if (!embeds || embeds.length === 0) {
+    await interaction.reply({
+      embeds: [defaultEmbeds["unexpected-error"]()],
+      flags: ["Ephemeral"],
+    });
+    return;
+  }
+
+
+  let currentPage = 0;
+
+  const getButtons = (
+    disabled: boolean = false
+  ): ActionRowBuilder<ButtonBuilder> => {
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId("start")
+        .setEmoji("⏮️")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(disabled || currentPage === 0),
+      new ButtonBuilder()
+        .setCustomId("previous")
+        .setEmoji("◀️")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(disabled || currentPage === 0),
+      new ButtonBuilder()
+        .setCustomId("next")
+        .setEmoji("▶️")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(disabled || currentPage === embeds.length - 1),
+      new ButtonBuilder()
+        .setCustomId("end")
+        .setEmoji("⏭️")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(disabled || currentPage === embeds.length - 1)
+    );
+  };
+
+  const response: Message | InteractionResponse = await interaction.reply({
+    embeds: [embeds[currentPage]],
+    components: embeds.length > 1 ? [getButtons()] : [],
+    flags: ["Ephemeral"],
+  });
+
+  if (embeds.length === 1) return;
+
+  const collector = response.createMessageComponentCollector({
+    componentType: ComponentType.Button,
+    time,
+  });
+
+  collector.on("collect", async (i: ButtonInteraction) => {
+    if (i.user.id !== interaction.user.id) {
+      await i.reply({
+        content: `${config.emojis.cross} These buttons can only be accessed by the command author.`,
+        flags: ["Ephemeral"],
+      });
+      return;
+    }
+
+    switch (i.customId) {
+      case "start":
+        currentPage = 0;
+        break;
+      case "previous":
+        currentPage = Math.max(0, currentPage - 1);
+        break;
+      case "next":
+        currentPage = Math.min(embeds.length - 1, currentPage + 1);
+        break;
+      case "end":
+        currentPage = embeds.length - 1;
+        break;
+    }
+
+    await i.update({
+      embeds: [embeds[currentPage] as APIEmbed],
+      components: [getButtons()],
+    });
+  });
+
+  collector.on("end", async () => {
+    try {
+      await response.edit({
+        embeds: [embeds[currentPage] as APIEmbed],
+        components: [getButtons(true)],
+      });
+    } catch (error) {
+      err(`Failed to remove pagination buttons:\n${error}`);
+    }
+  });
+}
+
+export function limitSentence(str: string, length: number = 25) {
+  return str.length > length ? str.slice(0, length) + "..." : str;
+}
