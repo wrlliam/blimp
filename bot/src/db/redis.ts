@@ -1,4 +1,11 @@
 import { env } from "@/env";
 import { RedisClient } from "bun";
 
-export const redis = new RedisClient(env.REDIS_URL);
+let redis: RedisClient;
+
+if (!globalThis.redis) {
+  globalThis.redis = new RedisClient(env.REDIS_URL);
+}
+redis = globalThis.redis;
+
+export { redis };
