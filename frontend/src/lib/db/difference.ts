@@ -115,3 +115,19 @@ export const guildLevelMultiplier = backendSchema.table(
 
 export type GuildLevelMultiSelect = typeof guildLevelMultiplier.$inferSelect;
 export type GuildLevelMultiInsert = typeof guildLevelMultiplier.$inferInsert;
+
+export const starboards = backendSchema.table("starboards", {
+  id: text("id").primaryKey(), // generated ID
+  enabled: boolean("enabled").default(false),
+  guildId: text("guild_id").notNull(),
+  name: text("name"),
+  ignoreSelfStar: boolean("ignore_self_star").default(true),
+  ignoredRoles: text("ignored_roles"),
+  ignoredChannels: text("ignored_channels"),
+  channelId: text("channel_id"),
+  amountToStars: integer("amount_to_star"),
+  starEmoji: text("star_emoji").default(`⭐`),
+});
+
+export type StarboardsSelect = typeof starboards.$inferSelect;
+export type StarboardsInsert = typeof starboards.$inferInsert;

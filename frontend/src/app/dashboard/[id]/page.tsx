@@ -11,7 +11,7 @@ export default function DashboardPage() {
 
   const data = { user: user, guild: guild as unknown as Guild };
   return (
-    <div className="flex flex-row gap-2 w-full">
+    <div className="flex flex-col gap-2 w-full">
       <MessageLineChart {...data} />
       <RecentCommands {...data} />
     </div>

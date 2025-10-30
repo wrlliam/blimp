@@ -81,7 +81,7 @@ export function MessageLineChart(props: {
   }, []);
 
   return (
-    <Card className="border-blimp-border w-[35%] bg-dark-foreground  border">
+    <Card className="border-blimp-border w-[55%] bg-dark-foreground  border">
       <CardHeader>
         <CardTitle>Messages Per Day</CardTitle>
         <CardDescription>The past month of messages.</CardDescription>
@@ -93,7 +93,7 @@ export function MessageLineChart(props: {
           <ChartContainer className="ml-[-3rem]" config={chartConfig}>
             <LineChart accessibilityLayer data={chartData as ChartData}>
               <CartesianGrid vertical={false} />
-              <YAxis dataKey={"total"} tickLine={false} tickMargin={1} />
+              <YAxis dataKey={"total"} tickLine={false} tickMargin={8} />
               <XAxis
                 dataKey="day"
                 tickLine={false}

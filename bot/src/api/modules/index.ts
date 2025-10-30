@@ -7,6 +7,7 @@ import { welcomeAndGoodbyeModule } from "./welcome-and-goodbye";
 import { embedAndMessagesModule } from "./embed-and-messages";
 import { levelingModule } from "./leveling";
 import { settingsModule } from "./settings";
+import { starboardModule } from "./starboards";
 
 export const modules = new Elysia({
   prefix: "/modules",
@@ -18,3 +19,4 @@ export const modules = new Elysia({
   .use(embedAndMessagesModule)
   .use(levelingModule)
   .use(settingsModule)
+  .use(starboardModule);

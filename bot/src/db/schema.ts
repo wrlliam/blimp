@@ -40,7 +40,7 @@ export const guildConfig = backendSchema.table("guild_config", {
   permAdministrators: text("perm_admin").array(),
   permModerators: text("perm_mod").array(),
   permHelpers: text("perm_helper").array(),
-  
+
   //Logging
   logsChannelId: text("logs_channel_id"),
   enabledLogs: text("enabled_loggers")
@@ -50,6 +50,8 @@ export const guildConfig = backendSchema.table("guild_config", {
 
   // toggables
   reactionRoles: boolean("reaction_roles").notNull().default(false),
+
+  premium: boolean("premium").default(false),
 });
 
 export type GuildConfigSelect = typeof guildConfig.$inferSelect;
@@ -174,3 +176,19 @@ export const messageAndEmbeds = backendSchema.table("message_and_embeds", {
 
 export type MessageAndEmbedsSelect = typeof messageAndEmbeds.$inferSelect;
 export type MessageAndEmbedsInsert = typeof messageAndEmbeds.$inferInsert;
+
+export const starboards = backendSchema.table("starboards", {
+  id: text("id").primaryKey(), // generated ID
+  enabled: boolean("enabled").default(false),
+  guildId: text("guild_id").notNull(),
+  ignoreSelfStar: boolean("ignore_self_star").default(true),
+  name: text("name"),
+  ignoredRoles: text("ignored_roles"),
+  ignoredChannels: text("ignored_channels"),
+  channelId: text("channel_id"),
+  amountToStars: integer("amount_to_star"),
+  starEmoji: text("star_emoji").default(`⭐`),
+});
+
+export type StarboardsSelect = typeof starboards.$inferSelect;
+export type StarboardsInsert = typeof starboards.$inferInsert;
